@@ -1,0 +1,115 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="de.dorianscholz.openlibre.ui.DataPlotFragment">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/ll_scan">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ProgressBar
+                style="@android:style/Widget.DeviceDefault.Light.ProgressBar.Large"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/pb_scan_spinning"
+                android:progress="0"
+                android:layout_gravity="center"
+                android:layout_centerVertical="true"
+                android:layout_centerHorizontal="true"
+                tools:visibility="invisible"
+                android:max="40"
+                android:progressTint="@color/colorPrimaryDark"
+                android:progressTintMode="add" />
+
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:srcCompat="@drawable/ic_launcher"
+                android:id="@+id/imageView"
+                android:layout_margin="5dp" />
+        </RelativeLayout>
+
+        <TextView
+            android:text="Scan sensor by holding the backside of your device against the sensor."
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textView"
+            android:textAppearance="@style/TextAppearance.Design.Hint"
+            android:textAlignment="center"
+            android:layout_margin="5dp"
+            android:padding="20dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/ll_LastScanchart" android:visibility="visible">
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:layout_gravity="center"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tv_currentGlucose"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorSecondaryDark"
+                android:text="000"
+                android:textSize="80sp"
+                android:textStyle="bold"
+                android:textIsSelectable="false"
+                android:shadowColor="@color/colorBackgroundLight"
+                android:shadowRadius="3"
+                android:clickable="false"
+                android:gravity="fill" />
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/iv_unit"
+                app:srcCompat="@drawable/unit_mgdl"
+                android:layout_gravity="center" />
+
+            <ImageView
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:id="@+id/iv_prediction"
+                android:layout_gravity="center_vertical"
+                android:paddingLeft="5dp"
+                app:srcCompat="@drawable/arrow_flat" />
+
+        </LinearLayout>
+
+        <TextView
+            android:text="Scan info"
+            android:layout_width="match_parent"
+            android:layout_height="20dp"
+            android:id="@+id/tv_plotTitle"
+            android:layout_weight="1"
+            android:textAlignment="center" />
+
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/cv_LastScan"
+            android:layout_width="match_parent"
+            android:layout_gravity="center_vertical|center_horizontal"
+            android:layout_height="match_parent"
+            android:layout_weight="70" />
+
+    </LinearLayout>
+
+</RelativeLayout>
