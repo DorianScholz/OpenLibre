@@ -68,7 +68,7 @@ class DefaultRealmMigration implements RealmMigration {
                         }
                     });
 
-            oldVersion++;
+            //oldVersion++;
         }
     }
 }

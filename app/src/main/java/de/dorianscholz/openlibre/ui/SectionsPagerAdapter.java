@@ -13,11 +13,8 @@ import de.dorianscholz.openlibre.R;
  */
 class SectionsPagerAdapter extends SmartFragmentStatePagerAdapter {
 
-    Context mContext;
-
-    SectionsPagerAdapter(FragmentManager fm, Context context) {
-        super(fm);
-        mContext = context;
+    SectionsPagerAdapter(FragmentManager fragmentManager, Context context) {
+        super(fragmentManager, context);
     }
 
     @Override

@@ -11,6 +11,13 @@ public class RawTagData extends RealmObject {
     static final String SENSOR = "sensor";
     static final String DATA = "data";
 
+    private static final int offsetTrendTable = 28;
+    private static final int offsetHistoryTable = 124;
+    private static final int offsetTrendIndex = 26;
+    private static final int offsetHistoryIndex = 27;
+    private static final int offsetSensorAge = 316;
+    private static final int tableEntrySize = 6;
+
     @PrimaryKey
     String id;
     long date = -1;
@@ -26,10 +33,35 @@ public class RawTagData extends RealmObject {
         this.data = data.clone();
     }
 
-    RawTagData(RawTagData rawTagData) {
-        date = rawTagData.date;
-        sensor = new SensorData(rawTagData.sensor);
-        id = rawTagData.id;
-        data = rawTagData.data.clone();
+    int getTrendValue(int index) {
+        return getWord(offsetTrendTable + index * tableEntrySize) & 0x3FFF;
+    }
+
+    int getHistoryValue(int index) {
+        return getWord(offsetHistoryTable + index * tableEntrySize) & 0x3FFF;
+    }
+
+    private static int makeWord(byte high, byte low) {
+        return 0x100 * (high & 0xFF) + (low & 0xFF);
+    }
+
+    private int getWord(int offset) {
+        return makeWord(data[offset + 1], data[offset]);
+    }
+
+    private int getByte(int offset) {
+        return data[offset] & 0xFF;
+    }
+
+    int getIndexTrend() {
+        return getByte(offsetTrendIndex);
+    }
+
+    int getIndexHistory() {
+        return getByte(offsetHistoryIndex);
+    }
+
+    int getSensorAgeInMinutes() {
+        return getWord(offsetSensorAge);
     }
 }

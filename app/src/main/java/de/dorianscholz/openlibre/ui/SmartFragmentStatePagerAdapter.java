@@ -1,5 +1,6 @@
 package de.dorianscholz.openlibre.ui;
 
+import android.content.Context;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -12,11 +13,13 @@ import android.view.ViewGroup;
    Usage involves extending from SmartFragmentStatePagerAdapter as you would any other PagerAdapter.
 */
 abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerAdapter {
+    Context mContext;
     // Sparse array to keep track of registered fragments in memory
     private SparseArray<Fragment> registeredFragments = new SparseArray<>();
 
-    SmartFragmentStatePagerAdapter(FragmentManager fragmentManager) {
+    SmartFragmentStatePagerAdapter(FragmentManager fragmentManager, Context context) {
         super(fragmentManager);
+        mContext = context;
     }
 
     // Register the fragment when the item is instantiated
@@ -34,8 +37,9 @@ abstract class SmartFragmentStatePagerAdapter extends FragmentStatePagerAdapter 
         super.destroyItem(container, position, object);
     }
 
-    // Returns the fragment for the position (if instantiated)
-    Fragment getRegisteredFragment(int position) {
-        return registeredFragments.get(position);
+    // Returns the fragment for the position described by the resource id (if instantiated)
+    Fragment getRegisteredFragment(final int resourceId) {
+        return registeredFragments.get(mContext.getResources().getInteger(resourceId));
     }
+
 }

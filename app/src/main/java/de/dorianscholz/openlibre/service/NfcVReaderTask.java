@@ -1,5 +1,7 @@
 package de.dorianscholz.openlibre.service;
 
+import android.content.Context;
+import android.media.AudioManager;
 import android.nfc.Tag;
 import android.nfc.tech.NfcV;
 import android.os.AsyncTask;
@@ -7,6 +9,7 @@ import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -21,16 +24,20 @@ import io.realm.Realm;
 import io.realm.RealmResults;
 
 import static android.content.Context.VIBRATOR_SERVICE;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.bytesToHexString;
+import static android.media.AudioManager.RINGER_MODE_SILENT;
 import static de.dorianscholz.openlibre.OpenLibre.realmConfigProcessedData;
 import static de.dorianscholz.openlibre.OpenLibre.realmConfigRawData;
+import static de.dorianscholz.openlibre.model.AlgorithmUtil.bytesToHexString;
 
 
 public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
     private static final String LOG_ID = "GLUCOSE::" + NfcVReaderTask.class.getSimpleName();
+    private static final long[] vibrationPatternSuccess = {0, 200, 100, 200}; // [ms]
+    private static final long[] vibrationPatternFailure = {0, 500}; // [ms]
+    private static final long nfcReadTimeout = 1000; // [ms]
 
     private MainActivity mainActivity;
-    private String sensorId;
+    private String sensorTagId;
     private byte[] data;
 
     public NfcVReaderTask(MainActivity mainActivity) {
@@ -40,31 +47,44 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
 
     @Override
     protected void onPostExecute(Boolean success) {
-        ProgressBar pb = (ProgressBar) mainActivity.findViewById(R.id.pb_scan_spinning);
-        pb.setVisibility(View.INVISIBLE);
+        mainActivity.findViewById(R.id.pb_scan_circle).setVisibility(View.INVISIBLE);
 
-        long[] vibrationSuccessPattern = {0, 200, 100, 200};
         Vibrator vibrator = (Vibrator) mainActivity.getSystemService(VIBRATOR_SERVICE);
+        AudioManager audioManager = (AudioManager) mainActivity.getSystemService(Context.AUDIO_SERVICE);
 
-        if (success) {
-            vibrator.vibrate(vibrationSuccessPattern, -1);
-        } else {
-            vibrator.vibrate(200);
+        if (!success) {
+            Toast.makeText(mainActivity,
+                    mainActivity.getResources().getString(R.string.reading_sensor_error),
+                    Toast.LENGTH_SHORT
+            ).show();
+
+            if (audioManager.getRingerMode() != RINGER_MODE_SILENT) {
+                vibrator.vibrate(vibrationPatternFailure, -1);
+            }
             return;
         }
 
+        Toast.makeText(mainActivity,
+                mainActivity.getResources().getString(R.string.reading_sensor_success),
+                Toast.LENGTH_SHORT
+        ).show();
+
+        if (audioManager.getRingerMode() != RINGER_MODE_SILENT) {
+            vibrator.vibrate(vibrationPatternSuccess, -1);
+        }
         // FIXME: the new data should be propagated transparently through the database backend
-        mainActivity.onShowScanData(processRawData(sensorId, data));
+        mainActivity.onNfcReadingFinished(processRawData(sensorTagId, data));
     }
 
     @Override
     protected Boolean doInBackground(Tag... params) {
         Tag tag = params[0];
-        sensorId = bytesToHexString(tag.getId());
+        sensorTagId = bytesToHexString(tag.getId());
         return readNfcTag(tag);
     }
 
     private boolean readNfcTag(Tag tag) {
+        updateProgressBar(0);
         NfcV nfcvTag = NfcV.get(tag);
         Log.d(NfcVReaderTask.LOG_ID, "Attempting to read tag data");
         try {
@@ -89,7 +109,7 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
                         readData = nfcvTag.transceive(cmd);
                         break;
                     } catch (IOException e) {
-                        if ((System.currentTimeMillis() > startReadingTime + 2000)) {
+                        if ((System.currentTimeMillis() > startReadingTime + nfcReadTimeout)) {
                             Log.e(NfcVReaderTask.LOG_ID, "tag read timeout");
                             return false;
                         }
@@ -127,25 +147,23 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
         final int progress = blockIndex;
         mainActivity.runOnUiThread(new Runnable() {
             public void run() {
-                ProgressBar pb_reading;
-                pb_reading = (ProgressBar) mainActivity.findViewById(R.id.pb_scan_spinning);
-                pb_reading.setProgress(progress);
+                ((ProgressBar) mainActivity.findViewById(R.id.pb_scan_circle)).setProgress(progress);
             }
         });
     }
 
     // to be able to use the returned ReadingData object, this has to be called from the GUI thread
-    public static ReadingData processRawData(String sensorId, byte[] data) {
+    public static ReadingData processRawData(String sensorTagId, byte[] data) {
         // copy data to database
         Realm realmProcessedData = Realm.getInstance(realmConfigProcessedData);
         Realm realmRawData = Realm.getInstance(realmConfigRawData);
 
         SensorData sensor;
-        RealmResults<SensorData> sensorResults = realmProcessedData.where(SensorData.class).contains(SensorData.ID, sensorId).findAll();
+        RealmResults<SensorData> sensorResults = realmProcessedData.where(SensorData.class).contains(SensorData.ID, sensorTagId).findAll();
         if (sensorResults.size() > 0) {
             sensor = sensorResults.first();
         } else {
-            sensor = new SensorData(sensorId);
+            sensor = new SensorData(sensorTagId);
         }
 
         // commit raw data into realm for debugging

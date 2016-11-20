@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.Date;
 
@@ -18,12 +17,11 @@ import de.dorianscholz.openlibre.model.ReadingData;
 import io.realm.OrderedRealmCollection;
 import io.realm.RealmRecyclerViewAdapter;
 
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.getPredictionData;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.getTrendArrow;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDate;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatTime;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.trendArrowMap;
 import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_UNIT_IS_MMOL;
+import static de.dorianscholz.openlibre.model.AlgorithmUtil.TREND_UP_DOWN_LIMIT;
+import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDate;
+import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatTimeShort;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 class LogRecyclerViewAdapter
@@ -44,20 +42,27 @@ class LogRecyclerViewAdapter
 
     @Override
     public void onBindViewHolder(LogRowViewHolder holder, int position) {
-        ReadingData readingData = getData().get(position);
-        PredictionData predictedGlucose = getPredictionData(readingData.trend);
+        ReadingData readingData;
+        try {
+            readingData = getData().get(position);
+        } catch (NullPointerException e) {
+            return;
+        }
+        PredictionData predictedGlucose = new PredictionData(readingData.trend);
         holder.readingData = readingData;
         holder.tv_date.setText(mFormatDate.format(new Date(readingData.date)));
-        holder.tv_time.setText(mFormatTime.format(new Date(readingData.date)));
-        holder.tv_glucose.setText(predictedGlucose.glucoseData.glucoseString(GLUCOSE_UNIT_IS_MMOL));
+        holder.tv_time.setText(mFormatTimeShort.format(new Date(readingData.date)));
+        holder.tv_glucose.setText(predictedGlucose.glucoseData.glucoseString());
         if (GLUCOSE_UNIT_IS_MMOL) {
-            holder.iv_unit.setImageResource(R.drawable.unit_mmoll);
+            holder.iv_unit.setImageResource(R.drawable.ic_unit_mmoll);
         } else {
-            holder.iv_unit.setImageResource(R.drawable.unit_mgdl);
+            holder.iv_unit.setImageResource(R.drawable.ic_unit_mgdl);
         }
-        holder.iv_prediction.setImageResource(trendArrowMap.get(getTrendArrow(predictedGlucose)));
+        //holder.iv_predictionArrow.setImageResource(trendArrowMap.get(getTrendArrow(predictedGlucose)));
+        float rotationDegrees = -90f * max(-1f, min(1f, (float) (predictedGlucose.glucoseSlopeRaw / TREND_UP_DOWN_LIMIT)));
+        holder.iv_predictionArrow.setRotation(rotationDegrees);
         // reduce trend arrow visibility according to prediction confidence
-        holder.iv_prediction.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
+        holder.iv_predictionArrow.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
     }
 
     class LogRowViewHolder
@@ -67,7 +72,7 @@ class LogRecyclerViewAdapter
         TextView tv_time;
         TextView tv_glucose;
         ImageView iv_unit;
-        ImageView iv_prediction;
+        ImageView iv_predictionArrow;
         ReadingData readingData;
 
         LogRowViewHolder(View view) {
@@ -76,7 +81,7 @@ class LogRecyclerViewAdapter
             tv_time = (TextView) view.findViewById(R.id.tv_log_time);
             tv_glucose = (TextView) view.findViewById(R.id.tv_log_glucose);
             iv_unit = (ImageView) view.findViewById(R.id.iv_log_unit);
-            iv_prediction = (ImageView) view.findViewById(R.id.iv_log_prediction);
+            iv_predictionArrow = (ImageView) view.findViewById(R.id.iv_log_prediction);
             view.setOnCreateContextMenuListener(this);
             view.setOnClickListener(this);
         }
@@ -105,10 +110,6 @@ class LogRecyclerViewAdapter
                 case R.id.action_delete_scan:
                     fragment.deleteScanData(readingData);
                     return true;
-                default:
-                    Toast.makeText(itemView.getContext(),
-                            String.format("unknown menu item id: %d", id),
-                            Toast.LENGTH_SHORT).show();
             }
             return false;
         }

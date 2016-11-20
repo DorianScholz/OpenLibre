@@ -14,10 +14,15 @@ public class ReadingData extends RealmObject {
     static final String TREND = "trend";
     static final String HISTORY = "history";
 
+
+    private static final int numHistoryValues = 32;
+    private static final int historyIntervalInMinutes = 15;
+    private static final int numTrendValues = 16;
+
     @PrimaryKey
-    String id;
-    SensorData sensor;
-    int sensorAgeInMinutes = -1;
+    private String id;
+    private SensorData sensor;
+    private int sensorAgeInMinutes = -1;
     public long date = -1;
     public RealmList<GlucoseData> trend = new RealmList<>();
     public RealmList<GlucoseData> history = new RealmList<>();
@@ -28,7 +33,7 @@ public class ReadingData extends RealmObject {
         date = rawTagData.date;
         sensor = new SensorData(rawTagData.sensor);
 
-        sensorAgeInMinutes = getWord(rawTagData.data, 316);
+        sensorAgeInMinutes = rawTagData.getSensorAgeInMinutes();
         if (sensor.startDate < 0) {
             sensor.startDate = date - TimeUnit.MINUTES.toMillis(sensorAgeInMinutes);
         } else {
@@ -38,23 +43,21 @@ public class ReadingData extends RealmObject {
                     date - sensor.startDate + TimeUnit.SECONDS.toMillis(90));
         }
 
-        final int numHistoryValues = 32;
-        final int historyIntervalInMinutes = 15;
-        final int numTrendValues = 16;
-
-        int indexTrend = rawTagData.data[26] & 0xFF;
-        int indexHistory = rawTagData.data[27] & 0xFF;
+        int indexTrend = rawTagData.getIndexTrend();
+        int indexHistory = rawTagData.getIndexHistory();
 
         // discrete version of the sensor age based on the history interval length to align data over multiple scans
         // (adding the magic number of 2 minutes to align the history values with the trend values)
         int sensorAgeDiscreteInMinutes = 2 +
-                (sensorAgeInMinutes / historyIntervalInMinutes) * historyIntervalInMinutes;
+                sensorAgeInMinutes - (sensorAgeInMinutes % historyIntervalInMinutes);
+        //int sensorAgeDiscreteInMinutes = -4 + (int) (TimeUnit.MILLISECONDS.toMinutes(sensor.startDate) % historyIntervalInMinutes) +
+        //        sensorAgeInMinutes - (sensorAgeInMinutes % historyIntervalInMinutes);
 
         // read history values from ring buffer, starting at indexHistory (bytes 124-315)
         for (int counter = 0; counter < numHistoryValues; counter++) {
             int index = (indexHistory + counter) % numHistoryValues;
 
-            int glucoseLevelRaw = getHistoryValue(rawTagData.data, index);
+            int glucoseLevelRaw = rawTagData.getHistoryValue(index);
             // skip zero values if the sensor has not filled the ring buffer completely
             if (glucoseLevelRaw > 0) {
                 int dataAgeInMinutes = (numHistoryValues * historyIntervalInMinutes) -
@@ -69,7 +72,7 @@ public class ReadingData extends RealmObject {
         for (int counter = 0; counter < numTrendValues; counter++) {
             int index = (indexTrend + counter) % numTrendValues;
 
-            int glucoseLevelRaw = getTrendValue(rawTagData.data, index);
+            int glucoseLevelRaw = rawTagData.getTrendValue(index);
             // skip zero values if the sensor has not filled the ring buffer completely
             if (glucoseLevelRaw > 0) {
                 int dataAgeInMinutes = numTrendValues - counter;
@@ -78,24 +81,6 @@ public class ReadingData extends RealmObject {
                 trend.add(new GlucoseData(sensor, ageInSensorMinutes, glucoseLevelRaw, true));
             }
         }
-    }
-
-    private static int makeWord(byte high, byte low) {
-        return 0x100 * (high & 0xFF) + (low & 0xFF);
-    }
-
-    private static int getWord(byte[] data, int offset) {
-        return makeWord(data[offset + 1], data[offset]);
-    }
-
-    // get trend value from trend table starting byte 28
-    private static int getTrendValue(byte[] data, int index) {
-        return getWord(data, index * 6 + 28) & 0x3FFF;
-    }
-
-    // get history value from history table starting byte 124
-    private static int getHistoryValue(byte[] data, int index) {
-        return getWord(data, index * 6 + 124) & 0x3FFF;
     }
 
 }

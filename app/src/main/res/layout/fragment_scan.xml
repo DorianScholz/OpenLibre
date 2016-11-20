@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="de.dorianscholz.openlibre.ui.DataPlotFragment"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <include
+        android:id="@+id/scan_progress"
+        layout="@layout/fragment_scan_progress" />
+
+    <include
+        android:id="@+id/scan_view"
+        layout="@layout/fragment_scan_show_current_data" />
+
+</RelativeLayout>

@@ -10,6 +10,7 @@ android {
         targetSdkVersion 25
         versionCode 1
         versionName "0.1"
+        vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         project.ext.set("archivesBaseName", defaultConfig.applicationId + "-" + defaultConfig.versionName + "." + defaultConfig.versionCode);
     }
@@ -26,8 +27,6 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    debugCompile 'com.facebook.stetho:stetho:1.4.1'
-    debugCompile 'com.uphyca:stetho_realm:2.0.0'
     compile 'io.realm:android-adapters:1.4.0'
     compile 'com.github.PhilJay:MPAndroidChart:v3.0.0'
     compile 'com.github.PhilJay:MPAndroidChart-Realm:v2.0.2@aar'
@@ -39,6 +38,8 @@ dependencies {
     compile 'org.apache.commons:commons-math3:3.6.1'
     compile 'com.google.code.gson:gson:2.8.0'
     testCompile 'junit:junit:4.12'
+    debugCompile 'com.facebook.stetho:stetho:1.4.1'
+    debugCompile 'com.uphyca:stetho_realm:2.0.0'
 }
 
 // include user specific build tasks

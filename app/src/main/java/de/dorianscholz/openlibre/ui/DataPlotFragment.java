@@ -3,8 +3,10 @@ package de.dorianscholz.openlibre.ui;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -23,11 +25,15 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import de.dorianscholz.openlibre.R;
@@ -38,19 +44,15 @@ import de.dorianscholz.openlibre.model.ReadingData;
 import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_TARGET_MAX;
 import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_TARGET_MIN;
 import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_UNIT_IS_MMOL;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.convertGlucoseMGDLToDisplayUnit;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.convertGlucoseRawToDisplayUnit;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.getPredictionData;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.getTrendArrow;
+import static de.dorianscholz.openlibre.model.AlgorithmUtil.TREND_UP_DOWN_LIMIT;
 import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDate;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDateShort;
 import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDateTime;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDayTime;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatTime;
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.trendArrowMap;
+import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatTimeShort;
+import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDisplayUnit;
+import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public class DataPlotFragment extends Fragment implements OnChartValueSelectedListener {
+public class DataPlotFragment extends Fragment implements OnChartValueSelectedListener, OnChartGestureListener {
     private static final String LOG_ID = "GLUCOSE::" + DataPlotFragment.class.getSimpleName();
 
     private final static int NUM_PLOT_COLORS = 1;
@@ -64,6 +66,9 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     private View mDataPlotView;
     LineChart mPlot;
     private long mFirstDate = -1;
+    private Timer mUpdatePlotTitleTimer;
+    private TimerTask mUpdatePlotTitleTask = null;
+    private DateTimeMarkerView mDateTimeMarkerView;
 
     @SuppressWarnings("unused")
     public static DataPlotFragment newInstance() {
@@ -73,7 +78,12 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        mDataPlotView = inflater.inflate(R.layout.fragment_data_plot, container, false);
+        mDataPlotView = inflater.inflate(R.layout.fragment_scan, container, false);
+        ((ProgressBar) mDataPlotView.findViewById(R.id.pb_scan_circle)).setProgress(0);
+        mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.VISIBLE);
+        mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.INVISIBLE);
+
+        mUpdatePlotTitleTimer = new Timer();
 
         setupPlot();
 
@@ -82,47 +92,33 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         return mDataPlotView;
     }
 
-    public void clearScanData() {
-        (mDataPlotView.findViewById(R.id.ll_scan)).setVisibility(View.VISIBLE);
-        (mDataPlotView.findViewById(R.id.pb_scan_spinning)).setVisibility(View.INVISIBLE);
-
-        mPlot.setNoDataText("");
-        ((TextView) mDataPlotView.findViewById(R.id.tv_plotTitle)).setText("");
-        ((TextView) mDataPlotView.findViewById(R.id.tv_currentGlucose)).setText("");
-        mDataPlotView.findViewById(R.id.iv_unit).setVisibility(View.INVISIBLE);
-        mDataPlotView.findViewById(R.id.iv_prediction).setVisibility(View.INVISIBLE);
-    }
-
-    private void updateScanData(List<GlucoseData> trend) {
-        if (trend.size() == 0) {
-            Toast.makeText(this.getContext(), "No current data available!", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        (mDataPlotView.findViewById(R.id.ll_scan)).setVisibility(View.INVISIBLE);
-
-        PredictionData predictedGlucose = getPredictionData(trend);
-
-        TextView tv_currentGlucose = (TextView) mDataPlotView.findViewById(R.id.tv_currentGlucose);
-        tv_currentGlucose.setText(String.valueOf(predictedGlucose.glucoseData.glucoseString(GLUCOSE_UNIT_IS_MMOL)));
-
-        ImageView iv_unit = (ImageView) mDataPlotView.findViewById(R.id.iv_unit);
-        if (GLUCOSE_UNIT_IS_MMOL) {
-            iv_unit.setImageResource(R.drawable.unit_mmoll);
-        } else {
-            iv_unit.setImageResource(R.drawable.unit_mgdl);
-        }
-        iv_unit.setVisibility(View.VISIBLE);
-
-        ImageView iv_prediction_arrow = (ImageView) mDataPlotView.findViewById(R.id.iv_prediction);
-        iv_prediction_arrow.setImageResource(trendArrowMap.get(getTrendArrow(predictedGlucose)));
-        // reduce trend arrow visibility according to prediction confidence
-        iv_prediction_arrow.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
-        iv_prediction_arrow.setVisibility(View.VISIBLE);
-    }
-
     private void setupPlot() {
-        mPlot = (LineChart) mDataPlotView.findViewById(R.id.cv_LastScan);
+        mPlot = (LineChart) mDataPlotView.findViewById(R.id.cv_last_scan);
+        mPlot.setNoDataText("");
+        mPlot.setOnChartGestureListener(this);
+        mDateTimeMarkerView = new DateTimeMarkerView(getContext(), R.layout.date_time_marker);
+        mPlot.setMarkerView(mDateTimeMarkerView);
+
+        // prevent scrolling in the plot to trigger switching of the view pager tabs
+        mPlot.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        ViewPager viewPager = (ViewPager) getActivity().findViewById(R.id.view_pager);
+                        viewPager.requestDisallowInterceptTouchEvent(true);
+                        break;
+                    }
+                    case MotionEvent.ACTION_CANCEL:
+                    case MotionEvent.ACTION_UP: {
+                        ViewPager viewPager = (ViewPager) getActivity().findViewById(R.id.view_pager);
+                        viewPager.requestDisallowInterceptTouchEvent(false);
+                        break;
+                    }
+                }
+                return false;
+            }
+        });
 
         // no description text
         mPlot.getDescription().setEnabled(false);
@@ -152,10 +148,9 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         xAxis.setTextSize(12f);
         xAxis.setTextColor(Color.BLACK);
         xAxis.setDrawAxisLine(false);
-        xAxis.setDrawGridLines(true);
+        xAxis.setDrawGridLines(false);
         xAxis.setCenterAxisLabels(false);
         xAxis.setGranularity(convertDateToXAxisValue(TimeUnit.MINUTES.toMillis(5L))); // same unit as x axis values
-        xAxis.enableGridDashedLine(5f, 5f, 0f);
         xAxis.setDrawLimitLinesBehindData(true);
         xAxis.setLabelCount(4);
 
@@ -163,7 +158,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
                 long date = convertXAxisValueToDate(value);
-                return mFormatTime.format(new Date(date));
+                return mFormatTimeShort.format(new Date(date));
             }
 
             @Override
@@ -188,7 +183,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
 
         LimitLine limitLineMax = new LimitLine(
                 GLUCOSE_TARGET_MAX,
-                getResources().getString(R.string.pref_glucuse_target_max)
+                getResources().getString(R.string.pref_glucose_target_max)
         );
         limitLineMax.setLineWidth(4f);
         limitLineMax.setTextSize(9f);
@@ -216,22 +211,83 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         }
     }
 
-    void onDataUpdate(List<GlucoseData> history, List<GlucoseData> trend) {
-        updatePlot(history, trend);
+    public void clearScanData() {
+        mDataPlotView.findViewById(R.id.scan_data).setVisibility(View.INVISIBLE);
     }
 
-    public void onDataUpdate(List<ReadingData> readingDataList) {
+    public void showMultipleScans(List<ReadingData> readingDataList) {
         mPlot.clear();
+        mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
+        mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
+
         for (ReadingData readingData : readingDataList) {
             addLineData(readingData.history, readingData.trend);
         }
+
         updatePlotTitle(false);
         updateChartViewConstrains();
+        ((TextView) mDataPlotView.findViewById(R.id.tv_plot_date)).setText("");
     }
 
-    void onDataUpdate(ReadingData readData) {
+    void showHistory(List<GlucoseData> history, List<GlucoseData> trend) {
+        mPlot.clear();
+        mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
+        mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
+
+        updatePlot(history, trend);
+    }
+
+    void showScan(ReadingData readData) {
+        mPlot.clear();
+        mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
+        mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
+
         updateScanData(readData.trend);
         updatePlot(readData.history, readData.trend);
+    }
+
+    private void updateScanData(List<GlucoseData> trend) {
+        if (trend.size() == 0) {
+            Toast.makeText(this.getContext(), "No current data available!", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        mDataPlotView.findViewById(R.id.scan_data).setVisibility(View.VISIBLE);
+
+        GlucoseData currentGlucose = trend.get(trend.size() - 1);
+        TextView tv_currentGlucose = (TextView) mDataPlotView.findViewById(R.id.tv_glucose_current_value);
+        tv_currentGlucose.setText(
+                getResources().getString(R.string.glucose_current_value) +
+                ": " +
+                String.valueOf(currentGlucose.glucoseString()) +
+                " " +
+                (GLUCOSE_UNIT_IS_MMOL ?
+                        getResources().getString(R.string.glucose_unit_mmoll) :
+                        getResources().getString(R.string.glucose_unit_mgdl))
+        );
+
+        PredictionData predictedGlucose = new PredictionData(trend);
+
+        TextView tv_predictedGlucose = (TextView) mDataPlotView.findViewById(R.id.tv_glucose_prediction);
+        tv_predictedGlucose.setText(String.valueOf(predictedGlucose.glucoseData.glucoseString()));
+        tv_predictedGlucose.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
+
+        ImageView iv_unit = (ImageView) mDataPlotView.findViewById(R.id.iv_unit);
+        if (GLUCOSE_UNIT_IS_MMOL) {
+            iv_unit.setImageResource(R.drawable.ic_unit_mmoll);
+        } else {
+            iv_unit.setImageResource(R.drawable.ic_unit_mgdl);
+        }
+        iv_unit.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
+
+        ImageView iv_predictionArrow = (ImageView) mDataPlotView.findViewById(R.id.iv_glucose_prediction);
+
+        // rotate trend arrow according to glucose prediction slope
+        float rotationDegrees = -90f * max(-1f, min(1f, (float) (predictedGlucose.glucoseSlopeRaw / TREND_UP_DOWN_LIMIT)));
+        iv_predictionArrow.setRotation(rotationDegrees);
+
+        // reduce trend arrow visibility according to prediction confidence
+        iv_predictionArrow.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
     }
 
     private void updatePlot(List<GlucoseData> history, List<GlucoseData> trend) {
@@ -242,45 +298,77 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
             return;
         }
 
-        (mDataPlotView.findViewById(R.id.ll_scan)).setVisibility(View.INVISIBLE);
-
-        mPlot.clear();
         addLineData(history, trend);
 
         updatePlotTitle(trend != null);
-
         updateChartViewConstrains();
+        ((TextView) mDataPlotView.findViewById(R.id.tv_plot_date)).setText("");
     }
 
     private void addLineData(List<GlucoseData> history, List<GlucoseData> trend) {
         if (mFirstDate < 0) {
             mFirstDate = history.get(0).date;
+            mDateTimeMarkerView.setFirstDate(mFirstDate);
         }
 
         LineData lineData = mPlot.getData();
         if (lineData == null) {
             lineData = new LineData();
         }
-        lineData.addDataSet(makeLineData(history, false));
+        lineData.addDataSet(makeLineData(history));
         if (trend != null) {
-            lineData.addDataSet(makeLineData(trend, true));
+            // connect history and trend data
+            List<GlucoseData> connection = new ArrayList<>();
+            connection.add(history.get(history.size() - 1));
+            connection.add(trend.get(0));
+            lineData.addDataSet(makeLineData(connection));
+
+            // show trend data
+            lineData.addDataSet(makeLineData(trend));
+
+            // also show regression data
+            PredictionData predictionData = new PredictionData(trend);
+            List<GlucoseData> prediction = predictionData.getPredictedData(
+                    new int[]{trend.get(0).ageInSensorMinutes, trend.get(trend.size() - 1).ageInSensorMinutes});
+            lineData.addDataSet(makeLineData(prediction));
         }
         mPlotColorIndex++;
         mPlot.setData(lineData);
     }
 
+    private void setPlotTitleUpdateTimer() {
+        // update 3 minutes after most recent data timestamp
+        Date updateTime = new Date(3 * 60 * 1000 + convertXAxisValueToDate(mPlot.getData().getXMax()));
+        if (mUpdatePlotTitleTask != null) {
+            mUpdatePlotTitleTask.cancel();
+        }
+        mUpdatePlotTitleTask = new TimerTask() {
+            @Override
+            public void run() {
+                getActivity().runOnUiThread(new Runnable() {
+                    public void run() {
+                        TextView tv_plotTitle = (TextView) mDataPlotView.findViewById(R.id.tv_plot_title);
+                        tv_plotTitle.setTextColor(Color.RED);
+                    }
+                });
+            }
+        };
+        mUpdatePlotTitleTimer.schedule(mUpdatePlotTitleTask, updateTime);
+    }
+
     private void updatePlotTitle(boolean isScanData) {
-        TextView tv_plotTitle = (TextView) mDataPlotView.findViewById(R.id.tv_plotTitle);
-        String chartTitle;
+        TextView tv_plotTitle = (TextView) mDataPlotView.findViewById(R.id.tv_plot_title);
+        String plotTitle;
         if (isScanData) {
-            chartTitle = String.format("Scan date: %s",
-                    mFormatDateTime.format(new Date(convertXAxisValueToDate(mPlot.getData().getXMax()))));
+            plotTitle = mFormatDateTime.format(new Date(convertXAxisValueToDate(mPlot.getData().getXMax())));
         } else {
-            chartTitle = String.format("Data from %s to %s",
+            plotTitle = String.format("Data from %s to %s",
                     mFormatDateTime.format(new Date(convertXAxisValueToDate(mPlot.getData().getXMin()))),
                     mFormatDateTime.format(new Date(convertXAxisValueToDate(mPlot.getData().getXMax()))));
         }
-        tv_plotTitle.setText(chartTitle);
+        tv_plotTitle.setTextColor(Color.BLACK);
+        setPlotTitleUpdateTimer();
+        tv_plotTitle.setText(plotTitle);
     }
 
     private void updateChartViewConstrains() {
@@ -308,14 +396,14 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         mPlot.invalidate();
     }
 
-    private LineDataSet makeLineData(List<GlucoseData> glucoseDataList, boolean isTrendData) {
+    private LineDataSet makeLineData(List<GlucoseData> glucoseDataList) {
         String title = "History";
-        if (isTrendData) title = "Trend";
+        if (glucoseDataList.get(0).isTrendData) title = "Trend";
 
         LineDataSet lineDataSet = new LineDataSet(new ArrayList<Entry>(), title);
         for (GlucoseData gd : glucoseDataList) {
             float x = convertDateToXAxisValue(gd.date);
-            float y = convertGlucoseRawToDisplayUnit(gd.glucoseLevelRaw);
+            float y = gd.glucose();
             lineDataSet.addEntryOrdered(new Entry(x, y));
             /*
             Log.d(LOG_ID, String.format("%s: %s -> %s: %f -> %f",
@@ -338,20 +426,20 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         lineDataSet.setDrawHighlightIndicators(true);
 
         int baseColor = PLOT_COLORS[mPlotColorIndex % NUM_PLOT_COLORS][0];
-        int lineColor = Color.argb(150, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor));
-        int circleColor = PLOT_COLORS[mPlotColorIndex % NUM_PLOT_COLORS][1];
-        if (isTrendData) {
-            lineDataSet.setColor(lineColor);
+        int softColor = Color.argb(150, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor));
+        int hardColor = PLOT_COLORS[mPlotColorIndex % NUM_PLOT_COLORS][1];
+        if (glucoseDataList.get(0).isTrendData) {
+            lineDataSet.setColor(hardColor);
             lineDataSet.setLineWidth(2f);
 
-            lineDataSet.setCircleColor(circleColor);
+            lineDataSet.setCircleColor(softColor);
 
             lineDataSet.setMode(LineDataSet.Mode.LINEAR);
         } else {
-            lineDataSet.setColor(lineColor);
+            lineDataSet.setColor(softColor);
             lineDataSet.setLineWidth(4f);
 
-            lineDataSet.setCircleColor(circleColor);
+            lineDataSet.setCircleColor(hardColor);
 
             lineDataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
             lineDataSet.setCubicIntensity(0.1f);
@@ -378,4 +466,63 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     public void onNothingSelected() {
 
     }
+
+    @Override
+    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+    }
+
+    @Override
+    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+
+    }
+
+    @Override
+    public void onChartLongPressed(MotionEvent me) {
+
+    }
+
+    @Override
+    public void onChartDoubleTapped(MotionEvent me) {
+
+    }
+
+    @Override
+    public void onChartSingleTapped(MotionEvent me) {
+
+    }
+
+    @Override
+    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+
+    }
+
+    @Override
+    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+
+    }
+
+    @Override
+    public void onChartTranslate(MotionEvent me, float dX, float dY) {
+        updatePlotDate();
+    }
+
+    public void updatePlotDate() {
+        TextView plotTitle = (TextView) mDataPlotView.findViewById(R.id.tv_plot_date);
+        if (convertXAxisValueToDate(mPlot.getData().getXMax()) -
+                convertXAxisValueToDate(mPlot.getData().getXMin())
+                > TimeUnit.HOURS.toMillis(12L)) {
+            String minDate = mFormatDate.format(new Date(convertXAxisValueToDate(mPlot.getLowestVisibleX())));
+            String maxDate = mFormatDate.format(new Date(convertXAxisValueToDate(mPlot.getHighestVisibleX())));
+            if (minDate.compareTo(maxDate) == 0 || mPlot.getLowestVisibleX() > mPlot.getHighestVisibleX()) {
+                plotTitle.setText(maxDate);
+            } else {
+                plotTitle.setText(minDate + " - " + maxDate);
+            }
+        } else {
+            // no need to show the date, if showing less then 12 hours of data (e.g. a single scan)
+            plotTitle.setText("");
+        }
+    }
+
 }

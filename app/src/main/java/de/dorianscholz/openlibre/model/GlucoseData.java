@@ -8,6 +8,8 @@ import java.util.concurrent.TimeUnit;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
+import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_UNIT_IS_MMOL;
+
 public class GlucoseData extends RealmObject implements Comparable<GlucoseData> {
     public static final String ID = "id";
     static final String SENSOR = "sensor";
@@ -19,9 +21,9 @@ public class GlucoseData extends RealmObject implements Comparable<GlucoseData> 
     @PrimaryKey
     String id;
     SensorData sensor;
-    boolean isTrendData = false;
-    int ageInSensorMinutes = -1;
-    public int glucoseLevelRaw = -1; // in mg/l = 0.1 mg/dl
+    public boolean isTrendData = false;
+    public int ageInSensorMinutes = -1;
+    int glucoseLevelRaw = -1; // in mg/l = 0.1 mg/dl
     public long date;
 
     public GlucoseData() {}
@@ -37,16 +39,47 @@ public class GlucoseData extends RealmObject implements Comparable<GlucoseData> 
         date = sensor.startDate + TimeUnit.MINUTES.toMillis(ageInSensorMinutes);
     }
 
-    double glucose(boolean mmol) {
-        return mmol ?
-                AlgorithmUtil.convertGlucoseRawToMMOL(glucoseLevelRaw) :
-                AlgorithmUtil.convertGlucoseRawToMGDL(glucoseLevelRaw);
+/*
+    static float convertGlucoseMMOLToMGDL(float mmol) {
+        return mmol * 18f;
+    }
+*/
+
+    private static float convertGlucoseMGDLToMMOL(float mgdl) {
+        return mgdl / 18f;
     }
 
-    public String glucoseString(boolean mmol) {
-        return mmol ?
-                new DecimalFormat("##.0").format(glucose(mmol)) :
-                new DecimalFormat("###").format(glucose(mmol));
+    private static float convertGlucoseRawToMGDL(float raw) {
+        return raw / 10f;
+    }
+
+    private static float convertGlucoseRawToMMOL(float raw) {
+        return convertGlucoseMGDLToMMOL(raw / 10f);
+    }
+
+    public static float convertGlucoseMGDLToDisplayUnit(float mgdl) {
+        return GLUCOSE_UNIT_IS_MMOL ? convertGlucoseMGDLToMMOL(mgdl) : mgdl;
+    }
+
+    public static float convertGlucoseRawToDisplayUnit(float raw) {
+        return GLUCOSE_UNIT_IS_MMOL ? convertGlucoseRawToMMOL(raw) : convertGlucoseRawToMGDL(raw);
+    }
+
+    public static String getDisplayUnit() {
+        return GLUCOSE_UNIT_IS_MMOL ? "mmol/l" : "mg/dl";
+    }
+
+    public float glucose() {
+        return convertGlucoseRawToDisplayUnit(glucoseLevelRaw);
+    }
+
+    public static String formatValue(float value) {
+        return GLUCOSE_UNIT_IS_MMOL ?
+                new DecimalFormat("##.0").format(value) :
+                new DecimalFormat("###").format(value);
+    }
+    public String glucoseString() {
+        return formatValue(glucose());
     }
 
     @Override

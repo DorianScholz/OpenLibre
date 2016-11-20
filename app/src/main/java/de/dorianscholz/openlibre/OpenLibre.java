@@ -18,7 +18,7 @@ import io.realm.RealmConfiguration;
 import io.realm.Sort;
 import io.realm.exceptions.RealmError;
 
-import static de.dorianscholz.openlibre.model.AlgorithmUtil.convertGlucoseMGDLToDisplayUnit;
+import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDisplayUnit;
 
 public class OpenLibre extends Application {
 
@@ -101,6 +101,7 @@ public class OpenLibre extends Application {
             return;
         }
 
+        // look for old format default realm in default location
         RealmConfiguration defaultConfig = new RealmConfiguration.Builder()
                 .schemaVersion(2)
                 .migration(new DefaultRealmMigration())
@@ -110,7 +111,20 @@ public class OpenLibre extends Application {
 
         if (realmOldDefault.isEmpty()) {
             realmOldDefault.close();
-            return;
+
+            // look for old format default realm in custom location
+            defaultConfig = new RealmConfiguration.Builder()
+                    .directory(openLibreDataPath)
+                    .schemaVersion(2)
+                    .migration(new DefaultRealmMigration())
+                    .build();
+
+            realmOldDefault = Realm.getInstance(defaultConfig);
+
+            if (realmOldDefault.isEmpty()) {
+                realmOldDefault.close();
+                return;
+            }
         }
 
         Log.i(LOG_ID, "Migrating data from default realm to raw_data realm.");
