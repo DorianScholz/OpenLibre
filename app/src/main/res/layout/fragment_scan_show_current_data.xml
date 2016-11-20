@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_data_plot"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:visibility="visible"
+    android:layout_marginBottom="5dp"
+    android:layout_marginTop="5dp">
+
+    <include
+        android:id="@+id/scan_data"
+        layout="@layout/fragment_scan_data"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent" />
+
+    <include
+        android:id="@+id/scan_plot"
+        layout="@layout/fragment_scan_plot"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+</LinearLayout>

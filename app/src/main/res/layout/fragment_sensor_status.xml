@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <TextView
+        android:id="@+id/tv_sensor_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textSize="16sp"
+        android:text="@string/sensor_id"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:gravity="end"
+        android:id="@+id/tv_sensor_id_value" />
+
+    <TextView
+        android:id="@+id/tv_sensor_start_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textSize="16sp"
+        android:text="@string/sensor_start_date"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:gravity="end"
+        android:id="@+id/tv_sensor_start_date_value" />
+
+    <TextView
+        android:id="@+id/tv_sensor_ends_in"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textSize="16sp"
+        android:text="@string/sensor_expires_in"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="textEnd"
+        android:gravity="end"
+        android:id="@+id/tv_sensor_ends_in_value" />
+
+</LinearLayout>
