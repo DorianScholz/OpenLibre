@@ -63,8 +63,6 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
 
     private boolean mContinuousSensorReadingFlag = false;
     private Tag mLastNfcTag;
-    private Timer mContinuousSensorReadingTimer;
-    private TimerTask mContinuousSensorReadingTask;
     private MainActivity mainActivity;
 
     @Override
@@ -348,15 +346,15 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
 
 
     private void startContinuousSensorReadingTimer() {
-        mContinuousSensorReadingTimer = new Timer();
+        Timer continuousSensorReadingTimer = new Timer();
         mainActivity = this;
-        mContinuousSensorReadingTask = new TimerTask() {
+        TimerTask continuousSensorReadingTask = new TimerTask() {
             @Override
             public void run() {
                 new NfcVReaderTask(mainActivity).execute(mLastNfcTag);
             }
         };
-        mContinuousSensorReadingTimer.schedule(mContinuousSensorReadingTask, 0L, TimeUnit.SECONDS.toMillis(60L));
+        continuousSensorReadingTimer.schedule(continuousSensorReadingTask, 0L, TimeUnit.SECONDS.toMillis(60L));
     }
 
     @Override
@@ -372,7 +370,7 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             return;
         }
 
-        if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(data.getAction())){
+        if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(data.getAction())) {
             mLastNfcTag = data.getParcelableExtra(NfcAdapter.EXTRA_TAG);
             long now = new Date().getTime();
 
@@ -380,8 +378,11 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
                 startContinuousSensorReadingTimer();
 
             } else if (foregroundDispatch && (now - mLastScanTime) > 5000) {
-                ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
-                        .clearScanData();
+                DataPlotFragment dataPlotFragment = (DataPlotFragment)
+                        mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan);
+                if (dataPlotFragment != null) {
+                    dataPlotFragment.clearScanData();
+                }
 
                 new NfcVReaderTask(this).execute(mLastNfcTag);
             }
