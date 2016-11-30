@@ -91,7 +91,15 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
 
         return mDataPlotView;
     }
-
+    
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (mUpdatePlotTitleTask != null) {
+            mUpdatePlotTitleTask.cancel();
+        }
+    }
+    
     private void setupPlot() {
         mPlot = (LineChart) mDataPlotView.findViewById(R.id.cv_last_scan);
         mPlot.setNoDataText("");
@@ -345,12 +353,14 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         mUpdatePlotTitleTask = new TimerTask() {
             @Override
             public void run() {
-                getActivity().runOnUiThread(new Runnable() {
-                    public void run() {
-                        TextView tv_plotTitle = (TextView) mDataPlotView.findViewById(R.id.tv_plot_title);
-                        tv_plotTitle.setTextColor(Color.RED);
-                    }
-                });
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        public void run() {
+                            TextView tv_plotTitle = (TextView) mDataPlotView.findViewById(R.id.tv_plot_title);
+                            tv_plotTitle.setTextColor(Color.RED);
+                        }
+                    });
+                }
             }
         };
         mUpdatePlotTitleTimer.schedule(mUpdatePlotTitleTask, updateTime);
