@@ -73,7 +73,7 @@ public class SensorStatusFragment extends DialogFragment {
         {
             return super.onCreateView(inflater, container, savedInstanceState);
         } else {
-            View view = inflater.inflate(R.layout.fragment_about, container, false);
+            View view = inflater.inflate(R.layout.fragment_sensor_status, container, false);
             setupUi(view);
             return view;
         }

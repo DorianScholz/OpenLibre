@@ -48,6 +48,9 @@ class LogRecyclerViewAdapter
         } catch (NullPointerException e) {
             return;
         }
+        if (readingData.trend.size() == 0) {
+            return;
+        }
         PredictionData predictedGlucose = new PredictionData(readingData.trend);
         holder.readingData = readingData;
         holder.tv_date.setText(mFormatDate.format(new Date(readingData.date)));

@@ -22,6 +22,9 @@ public class PredictionData {
     }
 
     private void makePrediction(List<GlucoseData> trendList) {
+        if (trendList.size() == 0) {
+            return;
+        }
         regression = new SimpleRegression();
         for (int i = 0; i < trendList.size(); i++) {
             regression.addData(i, (trendList.get(i)).glucoseLevelRaw);

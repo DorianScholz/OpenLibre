@@ -6,6 +6,7 @@ import android.nfc.Tag;
 import android.nfc.tech.NfcV;
 import android.os.AsyncTask;
 import android.os.Vibrator;
+import android.support.annotation.RequiresPermission;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -64,14 +65,27 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
             return;
         }
 
+        if (audioManager.getRingerMode() != RINGER_MODE_SILENT) {
+            vibrator.vibrate(vibrationPatternSuccess, -1);
+        }
+
+        // FIXME: maybe this should be a dialog
+        if (RawTagData.getSensorAgeInMinutes(data) < 60) {
+            Toast.makeText(mainActivity,
+                    mainActivity.getResources().getString(R.string.reading_sensor_not_ready) + " " +
+                    mainActivity.getResources().getString(R.string.sensor_ready_in) + " " +
+                    (60 - RawTagData.getSensorAgeInMinutes(data)) + " " +
+                    mainActivity.getResources().getString(R.string.minutes),
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
         Toast.makeText(mainActivity,
                 mainActivity.getResources().getString(R.string.reading_sensor_success),
                 Toast.LENGTH_SHORT
         ).show();
 
-        if (audioManager.getRingerMode() != RINGER_MODE_SILENT) {
-            vibrator.vibrate(vibrationPatternSuccess, -1);
-        }
         // FIXME: the new data should be propagated transparently through the database backend
         mainActivity.onNfcReadingFinished(processRawData(sensorTagId, data));
     }

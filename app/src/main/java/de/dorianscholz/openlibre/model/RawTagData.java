@@ -49,6 +49,10 @@ public class RawTagData extends RealmObject {
         return makeWord(data[offset + 1], data[offset]);
     }
 
+    private static int getWord(byte[] data, int offset) {
+        return makeWord(data[offset + 1], data[offset]);
+    }
+
     private int getByte(int offset) {
         return data[offset] & 0xFF;
     }
@@ -61,7 +65,11 @@ public class RawTagData extends RealmObject {
         return getByte(offsetHistoryIndex);
     }
 
-    int getSensorAgeInMinutes() {
+    public int getSensorAgeInMinutes() {
         return getWord(offsetSensorAge);
+    }
+
+    public static int getSensorAgeInMinutes(byte[] data) {
+        return getWord(data, offsetSensorAge);
     }
 }
