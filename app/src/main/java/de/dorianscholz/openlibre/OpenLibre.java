@@ -13,6 +13,7 @@ import de.dorianscholz.openlibre.model.ProcessedDataModule;
 import de.dorianscholz.openlibre.model.RawDataModule;
 import de.dorianscholz.openlibre.model.RawTagData;
 import de.dorianscholz.openlibre.model.ReadingData;
+import de.dorianscholz.openlibre.model.UserDataModule;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.Sort;
@@ -32,6 +33,7 @@ public class OpenLibre extends Application {
 
     public static RealmConfiguration realmConfigRawData;
     public static RealmConfiguration realmConfigProcessedData;
+    public static RealmConfiguration realmConfigUserData;
     public static File openLibreDataPath;
 
 
@@ -52,6 +54,13 @@ public class OpenLibre extends Application {
             }
         }
         Log.i(LOG_ID, "Using data path: '" + openLibreDataPath.toString() + "'");
+
+        realmConfigUserData = new RealmConfiguration.Builder()
+                .modules(new UserDataModule())
+                .directory(openLibreDataPath)
+                .name("data_user.realm")
+                .schemaVersion(1)
+                .build();
 
         realmConfigRawData = new RealmConfiguration.Builder()
                 .modules(new RawDataModule())

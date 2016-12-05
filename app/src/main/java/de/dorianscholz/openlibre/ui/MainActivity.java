@@ -196,6 +196,11 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             mViewPager.setCurrentItem(getResources().getInteger(R.integer.viewpager_page_show_scan));
             return true;
 
+        } else if (id == R.id.action_enter_blood_glucose) {
+            DialogFragment bloodGlucoseInputFragment = new BloodGlucoseInputFragment();
+            bloodGlucoseInputFragment.show(getSupportFragmentManager(), "enterglucose");
+            return true;
+
         } else if (id == R.id.action_show_sensor_status) {
             DialogFragment sensorStatusFragment = new SensorStatusFragment();
             sensorStatusFragment.show(getSupportFragmentManager(), "sensorstatus");
