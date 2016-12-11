@@ -40,6 +40,7 @@ dependencies {
     testCompile 'junit:junit:4.12'
     debugCompile 'com.facebook.stetho:stetho:1.4.1'
     debugCompile 'com.uphyca:stetho_realm:2.0.0'
+    compile 'ch.acra:acra:4.9.0'
 }
 
 // include user specific build tasks

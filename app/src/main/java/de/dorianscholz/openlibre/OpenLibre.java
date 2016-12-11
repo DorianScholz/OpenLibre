@@ -1,9 +1,14 @@
 package de.dorianscholz.openlibre;
 
 import android.app.Application;
+import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
+import org.acra.ACRA;
+import org.acra.ReportingInteractionMode;
+import org.acra.annotation.ReportsCrashes;
+import org.acra.sender.HttpSender;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -21,6 +26,16 @@ import io.realm.exceptions.RealmError;
 
 import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDisplayUnit;
 
+@ReportsCrashes(
+        formUri = "http://www-stud.informatik.uni-frankfurt.de/~scholz/openlibre/report.php",
+        reportType = HttpSender.Type.FORM,
+        mode = ReportingInteractionMode.DIALOG,
+        resToastText = R.string.crash_toast_text,
+        resDialogTitle = R.string.app_name,
+        resDialogText = R.string.crash_dialog_text,
+        resDialogCommentPrompt = R.string.crash_dialog_comment_prompt,
+        resDialogOkToast = R.string.crash_dialog_ok_toast
+)
 public class OpenLibre extends Application {
 
     private static final String LOG_ID = "GLUCOSE::" + OpenLibre.class.getSimpleName();
@@ -38,8 +53,21 @@ public class OpenLibre extends Application {
 
 
     @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+
+        // The following line triggers the initialization of ACRA
+        ACRA.init(this);
+    }
+
+    @Override
     public void onCreate() {
         super.onCreate();
+
+        // if it is the onCreate for ARCA, skip own init tasks
+        if (ACRA.isACRASenderServiceProcess()) {
+            return;
+        }
 
         Realm.init(this);
 
@@ -163,6 +191,7 @@ public class OpenLibre extends Application {
         RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
                 .directory(path)
                 .name("test_storage.realm")
+                .deleteRealmIfMigrationNeeded()
                 .build();
         try {
             Realm testInstance = Realm.getInstance(realmConfiguration);

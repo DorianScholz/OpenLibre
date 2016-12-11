@@ -73,4 +73,9 @@
     <string name="about_description">OpenLibre allows to read the data of the Freestyle Libre CGM via NFC.</string>
     <string name="about_source">OpenLibre is free and open source and can be obtained from its website:</string>
     <string name="about_source_link" translatable="false">http://github.com/dorianscholz/openlibre</string>
+
+    <string name="crash_toast_text">Unfortunately OpenLibre has crashed.</string>
+    <string name="crash_dialog_text">Unfortunately OpenLibre has crashed. Please help fix this issue by reporting this crash, all you have to do is press OK.</string>
+    <string name="crash_dialog_comment_prompt">If you like, you can describe what happened before the crash:</string>
+    <string name="crash_dialog_ok_toast">Thank you very much for your crash report!</string>
 </resources>

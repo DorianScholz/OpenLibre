@@ -28,6 +28,11 @@
         android:title="@string/action_about"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_debug_make_crash"
+        android:orderInCategory="100"
+        android:title="DEBUG crash app"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_debug_cont_nfc_reading"
         android:orderInCategory="100"
         android:title="DEBUG cont. NFC read"

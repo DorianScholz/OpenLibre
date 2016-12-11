@@ -211,6 +211,9 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             aboutFragment.show(getSupportFragmentManager(), "about");
             return true;
 
+        } else if (id == R.id.action_debug_make_crash) {
+            throw new RuntimeException("DEBUG: test crash");
+
         } else if (id == R.id.action_debug_cont_nfc_reading) {
             mContinuousSensorReadingFlag = !mContinuousSensorReadingFlag;
             return true;
