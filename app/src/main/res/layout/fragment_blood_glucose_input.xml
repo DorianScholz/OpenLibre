@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+android:layout_height="match_parent"
+android:orientation="vertical"
+android:padding="20dip">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:text="@string/enter_blood_glucose"
+        android:textColor="?android:attr/textColorPrimary" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal">
+
+        <EditText
+            android:id="@+id/edit_text_glucose"
+            android:layout_height="60dp"
+            android:ems="10"
+            android:inputType="numberDecimal"
+            android:layout_weight="3"
+            android:textAlignment="center"
+            android:textSize="36sp"
+            android:layout_width="100dp" />
+
+        <ImageView
+            android:layout_height="60dp"
+            app:srcCompat="@drawable/ic_unit_mgdl"
+            android:id="@+id/imageView"
+            android:layout_weight="1"
+            android:layout_width="60dp" />
+    </LinearLayout>
+
+</LinearLayout>
