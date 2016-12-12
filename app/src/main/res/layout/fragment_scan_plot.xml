@@ -15,7 +15,7 @@
         android:layout_marginBottom="-15dp" />
 
     <de.dorianscholz.openlibre.ui.LimitAreaLineChart
-        android:id="@+id/cv_last_scan"
+        android:id="@+id/cv_glucose_plot"
         android:layout_width="match_parent"
         android:layout_gravity="center_vertical|center_horizontal"
         android:layout_height="match_parent"/>

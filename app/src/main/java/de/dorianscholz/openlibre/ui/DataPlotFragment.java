@@ -23,7 +23,6 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.DefaultValueFormatter;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.ChartTouchListener;
@@ -103,7 +102,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     }
     
     private void setupPlot() {
-        mPlot = (LineChart) mDataPlotView.findViewById(R.id.cv_last_scan);
+        mPlot = (LineChart) mDataPlotView.findViewById(R.id.cv_glucose_plot);
         mPlot.setNoDataText("");
         mPlot.setOnChartGestureListener(this);
         mDateTimeMarkerView = new DateTimeMarkerView(getContext(), R.layout.date_time_marker);
@@ -213,7 +212,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     }
 
     public void clearScanData() {
-        mDataPlotView.findViewById(R.id.scan_data).setVisibility(View.INVISIBLE);
+        mDataPlotView.findViewById(R.id.scan_data).setVisibility(View.GONE);
     }
 
     public void showMultipleScans(List<ReadingData> readingDataList) {
