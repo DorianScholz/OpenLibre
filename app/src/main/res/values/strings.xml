@@ -30,8 +30,7 @@
     <string name="pref_general_settings">General</string>
     <string name="pref_glucose_unit">Unit</string>
     <string name="pref_glucose_unit_summary">Set the unit of measurement</string>
-    <string name="pref_glucose_target_min">Target area min.</string>
-    <string name="pref_glucose_target_max">Target area max.</string>
+    <string name="pref_glucose_target_area">Target area</string>
 
     <string name="pref_rotation_lock">Rotation Lock</string>
     <string name="pref_rotation_lock_sum">Keep portrait orientation</string>

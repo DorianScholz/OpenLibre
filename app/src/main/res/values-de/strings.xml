@@ -23,8 +23,6 @@
     <string name="pref_debug_mode_summary">Zeige Debugging-Optionen</string>
     <string name="pref_debug_settings">Debugging</string>
     <string name="pref_general_settings">Allgemein</string>
-    <string name="pref_glucose_target_max">Zielbereich max.</string>
-    <string name="pref_glucose_target_min">Zielbereich min.</string>
     <string name="pref_glucose_unit">Einheit</string>
     <string name="pref_glucose_unit_summary">Messeinheit einstellen</string>
     <string name="pref_nfc_quick_scan">Schnelles Auslesen</string>
@@ -47,4 +45,5 @@
     <string name="sensor_id">ID:</string>
     <string name="title_sensor_status">Sensor Status</string>
     <string name="sensor_start_date">Anfangsdatum:</string>
+    <string name="pref_glucose_target_area">Zielbereich</string>
 </resources>

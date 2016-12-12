@@ -23,6 +23,7 @@ import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.DefaultValueFormatter;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.ChartTouchListener;
@@ -169,11 +170,6 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
                 long date = convertXAxisValueToDate(value);
                 return mFormatTimeShort.format(new Date(date));
             }
-
-            @Override
-            public int getDecimalDigits() {
-                return 0;
-            }
         });
 
         YAxis leftAxis = mPlot.getAxisLeft();
@@ -191,22 +187,18 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         rightAxis.setEnabled(false);
 
         LimitLine limitLineMax = new LimitLine(
-                GLUCOSE_TARGET_MAX,
-                getResources().getString(R.string.pref_glucose_target_max)
+                GLUCOSE_TARGET_MAX
         );
-        limitLineMax.setLineWidth(4f);
-        limitLineMax.setTextSize(9f);
-        limitLineMax.setLineColor(Color.argb(128, 200, 150, 100));
+        limitLineMax.setLineColor(Color.TRANSPARENT);
         leftAxis.addLimitLine(limitLineMax);
 
         LimitLine limitLineMin = new LimitLine(
                 GLUCOSE_TARGET_MIN,
-                getResources().getString(R.string.pref_glucose_target_min)
+                getResources().getString(R.string.pref_glucose_target_area)
         );
-        limitLineMin.setLineWidth(4f);
-        limitLineMin.setTextSize(9f);
-        limitLineMin.setLineColor(Color.argb(128, 200, 100, 150));
-        limitLineMin.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_BOTTOM);
+        limitLineMin.setTextSize(10f);
+        limitLineMin.setLineColor(Color.argb(60, 100, 100, 120));
+        limitLineMin.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
         leftAxis.addLimitLine(limitLineMin);
 
         try {

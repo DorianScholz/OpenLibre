@@ -2,14 +2,12 @@ package de.dorianscholz.openlibre.model;
 
 import android.support.annotation.NonNull;
 
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Locale;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_UNIT_IS_MMOL;
 import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDateTime;
 import static de.dorianscholz.openlibre.model.GlucoseData.formatValue;
 
