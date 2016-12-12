@@ -115,7 +115,7 @@ public class OpenLibre extends Application {
 
         realmRawData.close();
 
-        StethoUtils.install(this);
+        StethoUtils.install(this, openLibreDataPath);
     }
 
     private void parseRawData(Realm realmRawData) {
