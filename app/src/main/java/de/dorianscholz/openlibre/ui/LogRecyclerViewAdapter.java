@@ -1,6 +1,7 @@
 package de.dorianscholz.openlibre.ui;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.ContextMenu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -26,11 +27,12 @@ import static java.lang.Math.min;
 
 class LogRecyclerViewAdapter
         extends RealmRecyclerViewAdapter<ReadingData, LogRecyclerViewAdapter.LogRowViewHolder> {
+    private static final String LOG_ID = "GLUCOSE::" + LogRecyclerViewAdapter.class.getSimpleName();
 
     private final LogFragment fragment;
 
     LogRecyclerViewAdapter(LogFragment fragment, OrderedRealmCollection<ReadingData> data) {
-        super(fragment.getActivity() ,data, true);
+        super(fragment.getActivity(), data, true);
         this.fragment = fragment;
     }
 
@@ -46,11 +48,16 @@ class LogRecyclerViewAdapter
         try {
             readingData = getData().get(position);
         } catch (NullPointerException e) {
+            Log.e(LOG_ID, "Null pointer at position: " + position);
+            holder.itemView.setVisibility(View.GONE);
             return;
         }
         if (readingData.trend.size() == 0) {
+            Log.e(LOG_ID, "No trend data at position: " + position);
+            holder.itemView.setVisibility(View.GONE);
             return;
         }
+        holder.itemView.setVisibility(View.VISIBLE);
         PredictionData predictedGlucose = new PredictionData(readingData.trend);
         holder.readingData = readingData;
         holder.tv_date.setText(mFormatDate.format(new Date(readingData.date)));

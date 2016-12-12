@@ -8,11 +8,11 @@ import io.realm.annotations.PrimaryKey;
 
 public class ReadingData extends RealmObject {
     public static final String ID = "id";
-    static final String SENSOR = "sensor";
-    static final String SENSOR_AGE_IN_MINUTES = "sensorAgeInMinutes";
+    public static final String SENSOR = "sensor";
+    public static final String SENSOR_AGE_IN_MINUTES = "sensorAgeInMinutes";
     public static final String DATE = "date";
-    static final String TREND = "trend";
-    static final String HISTORY = "history";
+    public static final String TREND = "trend";
+    public static final String HISTORY = "history";
 
 
     private static final int numHistoryValues = 32;

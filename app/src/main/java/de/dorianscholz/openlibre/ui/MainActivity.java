@@ -223,8 +223,10 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             return true;
 
         } else if (id == R.id.action_debug_plot_readings) {
-            List<ReadingData> readingDataList = mRealmProcessedData.where(ReadingData.class).
-                    findAllSorted(ReadingData.DATE, Sort.ASCENDING);
+            List<ReadingData> readingDataList = mRealmProcessedData
+                    .where(ReadingData.class)
+                    .isNotEmpty(ReadingData.HISTORY)
+                    .findAllSorted(ReadingData.DATE, Sort.ASCENDING);
             ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
                     .showMultipleScans(readingDataList);
             mViewPager.setCurrentItem(getResources().getInteger(R.integer.viewpager_page_show_scan));

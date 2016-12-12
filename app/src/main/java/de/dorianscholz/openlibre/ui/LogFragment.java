@@ -68,7 +68,10 @@ public class LogFragment extends Fragment {
             RecyclerView recyclerView = (RecyclerView) view;
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
             recyclerView.setAdapter(new LogRecyclerViewAdapter(this,
-                    mRealmProcessedData.where(ReadingData.class).findAllSortedAsync(ReadingData.DATE, Sort.DESCENDING)
+                    mRealmProcessedData
+                            .where(ReadingData.class)
+                            .isNotEmpty(ReadingData.TREND)
+                            .findAllSortedAsync(ReadingData.DATE, Sort.DESCENDING)
             ));
             recyclerView.setHasFixedSize(true);
             recyclerView.addItemDecoration(
