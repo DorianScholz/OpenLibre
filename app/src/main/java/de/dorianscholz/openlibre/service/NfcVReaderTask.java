@@ -70,11 +70,11 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
         }
 
         // FIXME: maybe this should be a dialog
-        if (RawTagData.getSensorAgeInMinutes(data) < 60) {
+        if (RawTagData.getSensorReadyInMinutes(data) > 0) {
             Toast.makeText(mainActivity,
                     mainActivity.getResources().getString(R.string.reading_sensor_not_ready) + " " +
                     mainActivity.getResources().getString(R.string.sensor_ready_in) + " " +
-                    (60 - RawTagData.getSensorAgeInMinutes(data)) + " " +
+                    (RawTagData.getSensorReadyInMinutes(data)) + " " +
                     mainActivity.getResources().getString(R.string.minutes),
                     Toast.LENGTH_LONG
             ).show();

@@ -5,6 +5,8 @@ import java.util.Locale;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
+import static java.lang.Math.max;
+
 public class RawTagData extends RealmObject {
     public static final String ID = "id";
     public static final String DATE = "date";
@@ -17,6 +19,7 @@ public class RawTagData extends RealmObject {
     private static final int offsetHistoryIndex = 27;
     private static final int offsetSensorAge = 316;
     private static final int tableEntrySize = 6;
+    private static final int sensorInitializationInMinutes = 60;
 
     @PrimaryKey
     String id;
@@ -46,7 +49,7 @@ public class RawTagData extends RealmObject {
     }
 
     private int getWord(int offset) {
-        return makeWord(data[offset + 1], data[offset]);
+        return getWord(data, offset);
     }
 
     private static int getWord(byte[] data, int offset) {
@@ -65,11 +68,15 @@ public class RawTagData extends RealmObject {
         return getByte(offsetHistoryIndex);
     }
 
-    public int getSensorAgeInMinutes() {
-        return getWord(offsetSensorAge);
+    int getSensorAgeInMinutes() {
+        return getSensorAgeInMinutes(data);
     }
 
-    public static int getSensorAgeInMinutes(byte[] data) {
+    private static int getSensorAgeInMinutes(byte[] data) {
         return getWord(data, offsetSensorAge);
+    }
+
+    public static int getSensorReadyInMinutes(byte[] data) {
+        return max(0, sensorInitializationInMinutes - getSensorAgeInMinutes(data));
     }
 }
