@@ -49,6 +49,7 @@ import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDate;
 import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatDateTime;
 import static de.dorianscholz.openlibre.model.AlgorithmUtil.mFormatTimeShort;
 import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDisplayUnit;
+import static de.dorianscholz.openlibre.model.GlucoseData.getDisplayUnit;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -269,9 +270,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
                 ": " +
                 String.valueOf(currentGlucose.glucoseString()) +
                 " " +
-                (GLUCOSE_UNIT_IS_MMOL ?
-                        getResources().getString(R.string.glucose_unit_mmoll) :
-                        getResources().getString(R.string.glucose_unit_mgdl))
+                getDisplayUnit()
         );
 
         PredictionData predictedGlucose = new PredictionData(trend);
