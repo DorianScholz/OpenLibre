@@ -46,4 +46,12 @@
     <string name="title_sensor_status">Sensor Status</string>
     <string name="sensor_start_date">Anfangsdatum:</string>
     <string name="pref_glucose_target_area">Zielbereich</string>
+    <string name="action_enter_blood_glucose">Blutzucker eingeben</string>
+    <string name="crash_toast_text">OpenLibre is leider abgestürzt.</string>
+    <string name="crash_dialog_text">OpenLibre is leider abgestürzt. Bitte helfen Sie dieses Problem zu lösen, indem Sie diesen Absturz melden. Dazu müssen Sie einfach nur OK drücken.</string>
+    <string name="crash_dialog_ok_toast">Vielen Dank für die Problemmeldung!</string>
+    <string name="crash_dialog_comment_prompt">Wenn Sie möchten, können Sie hier beschreiben, was vor dem Absturz passiert ist:</string>
+    <string name="enter_blood_glucose">Bitte manuel gemessenen Blutzucker eingeben:</string>
+    <string name="title_blood_glucose">Blutzuckerwert</string>
+    <string name="reading_sensor_not_ready">Sensor ist noch nicht bereit.</string>
 </resources>
