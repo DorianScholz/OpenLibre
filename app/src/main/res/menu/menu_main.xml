@@ -4,82 +4,76 @@
     tools:context="de.dorianscholz.openlibre.ui.MainActivity">
     <item
         android:id="@+id/action_show_last_scan"
-        android:orderInCategory="100"
         android:title="@string/action_show_last_scan"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_show_full_history"
-        android:orderInCategory="100"
         android:title="@string/action_show_all_data"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_enter_blood_glucose"
-        android:orderInCategory="100"
-        android:title="@string/action_enter_blood_glucose"
-        app:showAsAction="never" />
-    <item
         android:id="@+id/action_show_sensor_status"
-        android:orderInCategory="100"
         android:title="@string/action_sensor_status"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_about"
-        android:orderInCategory="100"
-        android:title="@string/action_about"
+        android:id="@+id/action_enter_blood_glucose"
+        android:title="@string/action_enter_blood_glucose"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_debug_make_crash"
-        android:orderInCategory="100"
-        android:title="DEBUG crash app"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_debug_cont_nfc_reading"
-        android:orderInCategory="100"
-        android:title="DEBUG cont. NFC read"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_debug_clear_plot"
-        android:orderInCategory="100"
-        android:title="DEBUG clear plot"
-        android:visible="false"
+        android:id="@+id/action_show_fpu_calculator"
+        android:title="@string/action_show_fpu_calculator"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_settings"
-        android:orderInCategory="100"
         android:title="@string/action_settings"
         app:showAsAction="never"
         android:visible="false" />
     <item
-        android:id="@+id/action_reparse_raw_data"
-        android:orderInCategory="100"
-        android:title="DEBUG reparse data"
+        android:id="@+id/action_about"
+        android:title="@string/action_about"
         app:showAsAction="never" />
     <item
-        android:id="@+id/action_delete_debug_data"
-        android:orderInCategory="100"
-        android:title="delete DEBUG data"
-        app:showAsAction="never"
-        android:visible="false" />
-    <item
-        android:id="@+id/action_debug_not_ready"
-        android:orderInCategory="100"
-        android:title="DEBUG sensor not ready"
-        app:showAsAction="never"
-        android:visible="false" />
-    <item
-        android:id="@+id/action_debug_export_data"
-        android:orderInCategory="100"
-        android:title="DEBUG export data"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_debug_plot_readings"
-        android:orderInCategory="100"
-        android:title="DEBUG plot readings"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_debug_value2"
-        android:orderInCategory="100"
-        android:title="DEBUG scan 2"
-        app:showAsAction="never"
-        android:visible="false" />
+        android:title="DEBUG">
+        <menu >
+            <item
+                android:id="@+id/action_reparse_raw_data"
+                android:title="DEBUG reparse data"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/action_debug_cont_nfc_reading"
+                android:title="DEBUG cont. NFC read"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/action_debug_clear_plot"
+                android:title="DEBUG clear plot"
+                android:visible="false"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/action_delete_debug_data"
+                android:title="delete DEBUG data"
+                app:showAsAction="never"
+                android:visible="false" />
+            <item
+                android:id="@+id/action_debug_not_ready"
+                android:title="DEBUG sensor not ready"
+                app:showAsAction="never"
+                android:visible="false" />
+            <item
+                android:id="@+id/action_debug_export_data"
+                android:title="DEBUG export data"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/action_debug_plot_readings"
+                android:title="DEBUG plot readings"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/action_debug_value2"
+                android:title="DEBUG scan 2"
+                app:showAsAction="never"
+                android:visible="false" />
+            <item
+                android:id="@+id/action_debug_make_crash"
+                android:title="DEBUG crash app"
+                app:showAsAction="never" />
+        </menu>
+    </item>
 </menu>

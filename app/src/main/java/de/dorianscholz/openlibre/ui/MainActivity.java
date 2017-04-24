@@ -201,6 +201,11 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             bloodGlucoseInputFragment.show(getSupportFragmentManager(), "enterglucose");
             return true;
 
+        } else if (id == R.id.action_show_fpu_calculator) {
+            DialogFragment fpuCalculatorFragment = new FPUCalculatorFragment();
+            fpuCalculatorFragment.show(getSupportFragmentManager(), "fpucalculator");
+            return true;
+
         } else if (id == R.id.action_show_sensor_status) {
             DialogFragment sensorStatusFragment = new SensorStatusFragment();
             sensorStatusFragment.show(getSupportFragmentManager(), "sensorstatus");

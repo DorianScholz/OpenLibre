@@ -4,9 +4,9 @@
     <string name="action_close">Schließen</string>
     <string name="action_debug">Debug</string>
     <string name="action_sensor_status">Sensor Status</string>
-    <string name="action_settings">Eisntellungen</string>
-    <string name="action_show_all_data">Zeige alle Daten</string>
-    <string name="action_show_last_scan">Zeige letzte Messung</string>
+    <string name="action_settings">Einstellungen</string>
+    <string name="action_show_all_data">Alle Daten</string>
+    <string name="action_show_last_scan">Letzte Messung</string>
     <string name="blood_glucose_estimation">BZ-Schätzung</string>
     <string name="day">Tag</string>
     <string name="days">Tage</string>
@@ -54,4 +54,5 @@
     <string name="enter_blood_glucose">Bitte manuel gemessenen Blutzucker eingeben:</string>
     <string name="title_blood_glucose">Blutzuckerwert</string>
     <string name="reading_sensor_not_ready">Sensor ist noch nicht bereit.</string>
+    <string name="action_show_fpu_calculator">FPE Rechner</string>
 </resources>
