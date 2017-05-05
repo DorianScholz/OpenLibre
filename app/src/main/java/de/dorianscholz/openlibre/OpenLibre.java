@@ -29,7 +29,11 @@ import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDi
 @ReportsCrashes(
         formUri = "http://www-stud.informatik.uni-frankfurt.de/~scholz/openlibre/report.php",
         reportType = HttpSender.Type.FORM,
-        mode = ReportingInteractionMode.DIALOG,
+        // FIXME: This should be set to DIALOG to ask the user if he wants to send the report!
+        // for ACRA versions 4.9.0 this does not always work (Android 6)
+        // for 4.9.1 and .2 it shows the dialog, but crashes on the actual report sending
+        // 4.9.3 has this fixed supposedly but is not released yet (2017-05-04)
+        mode = ReportingInteractionMode.SILENT,
         resToastText = R.string.crash_toast_text,
         resDialogTitle = R.string.app_name,
         resDialogText = R.string.crash_dialog_text,
@@ -38,7 +42,7 @@ import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDi
 )
 public class OpenLibre extends Application {
 
-    private static final String LOG_ID = "GLUCOSE::" + OpenLibre.class.getSimpleName();
+    private static final String LOG_ID = "OpenLibre::" + OpenLibre.class.getSimpleName();
 
     // TODO: convert these to settings
     public static final boolean GLUCOSE_UNIT_IS_MMOL = false;
@@ -188,11 +192,19 @@ public class OpenLibre extends Application {
 
     private File tryRealmStorage(File path) {
         // check where we can actually store the databases on this device
-        RealmConfiguration realmConfiguration = new RealmConfiguration.Builder()
-                .directory(path)
-                .name("test_storage.realm")
-                .deleteRealmIfMigrationNeeded()
-                .build();
+        RealmConfiguration realmConfiguration;
+        // catch errors when creating directory
+        try {
+            realmConfiguration = new RealmConfiguration.Builder()
+                    .directory(path)
+                    .name("test_storage.realm")
+                    .deleteRealmIfMigrationNeeded()
+                    .build();
+        } catch (IllegalArgumentException e) {
+            Log.e(LOG_ID, "Create realm failed for: '" + path.toString() + "': " + e.toString());
+            return null;
+        }
+        // catch errors when creating db files
         try {
             Realm testInstance = Realm.getInstance(realmConfiguration);
             testInstance.close();
