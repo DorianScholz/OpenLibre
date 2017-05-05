@@ -33,25 +33,23 @@ public class ReadingData extends RealmObject {
         date = rawTagData.date;
         sensor = new SensorData(rawTagData.sensor);
 
-        sensorAgeInMinutes = rawTagData.getSensorAgeInMinutes();
         if (sensor.startDate < 0) {
+            // if sensor start date has not been set for this sensor, calculate it from the age read from sensor
+            sensorAgeInMinutes = rawTagData.getSensorAgeInMinutes();
             sensor.startDate = date - TimeUnit.MINUTES.toMillis(sensorAgeInMinutes);
         } else {
-            // use start date of sensor to align data over multiple scans
-            // (adding the magic number of 90 seconds to correct the time of the last trend value to be now)
+            // if sensor start date has already been set in a previous scan, use it to align data over multiple scans
+            // (adding the magic number of 30 seconds to correct the time of the last trend value to be within the last minute)
             sensorAgeInMinutes = (int) TimeUnit.MILLISECONDS.toMinutes(
-                    date - sensor.startDate + TimeUnit.SECONDS.toMillis(90));
+                    date - sensor.startDate + TimeUnit.SECONDS.toMillis(30));
         }
 
         int indexTrend = rawTagData.getIndexTrend();
         int indexHistory = rawTagData.getIndexHistory();
 
         // discrete version of the sensor age based on the history interval length to align data over multiple scans
-        // (adding the magic number of 2 minutes to align the history values with the trend values)
-        int sensorAgeDiscreteInMinutes = 2 +
+        int sensorAgeDiscreteInMinutes = (int) (TimeUnit.MILLISECONDS.toMinutes(sensor.startDate) % historyIntervalInMinutes) +
                 sensorAgeInMinutes - (sensorAgeInMinutes % historyIntervalInMinutes);
-        //int sensorAgeDiscreteInMinutes = -4 + (int) (TimeUnit.MILLISECONDS.toMinutes(sensor.startDate) % historyIntervalInMinutes) +
-        //        sensorAgeInMinutes - (sensorAgeInMinutes % historyIntervalInMinutes);
 
         // read history values from ring buffer, starting at indexHistory (bytes 124-315)
         for (int counter = 0; counter < numHistoryValues; counter++) {
