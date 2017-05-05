@@ -10,6 +10,7 @@ import android.nfc.Tag;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -24,6 +25,7 @@ import com.google.gson.stream.JsonWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -48,7 +50,7 @@ import static de.dorianscholz.openlibre.service.NfcVReaderTask.processRawData;
 
 public class MainActivity extends AppCompatActivity implements LogFragment.OnScanDataListener {
 
-    private static final String LOG_ID = "GLUCOSE::" + MainActivity.class.getSimpleName();
+    private static final String LOG_ID = "OpenLibre::" + MainActivity.class.getSimpleName();
     private static final String DEBUG_SENSOR_TAG_ID = "e007a00000111111";
     private static final int PENDING_INTENT_TECH_DISCOVERED = 1;
 
@@ -232,8 +234,13 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
                     .where(ReadingData.class)
                     .isNotEmpty(ReadingData.HISTORY)
                     .findAllSorted(ReadingData.DATE, Sort.ASCENDING);
+            // plot only the last 100 readings
+            ArrayList<ReadingData> readingDataLimtedList = new ArrayList<>();
+            for (int i = readingDataList.size(); i > Math.max(readingDataList.size() - 100, 0) ; i--) {
+                readingDataLimtedList.add(readingDataList.get(i-1));
+            }
             ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
-                    .showMultipleScans(readingDataList);
+                    .showMultipleScans(readingDataLimtedList);
             mViewPager.setCurrentItem(getResources().getInteger(R.integer.viewpager_page_show_scan));
             return true;
 
@@ -320,8 +327,22 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
 
         } else if (id == R.id.action_reparse_raw_data) {
             // Delete complete Realm with processed data and parse raw data again
+
+            // close Realm instance
+            mRealmProcessedData.close();
+
+            // destroy log fragment to close its Realm instance
+            Fragment logFragment = mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_fragment_log);
+            getSupportFragmentManager().beginTransaction().remove(logFragment).commitNow();
+
+            // delete Realm file
+            Realm.deleteRealm(realmConfigProcessedData);
+
+            // create new Realm instance
+            mRealmProcessedData = Realm.getInstance(realmConfigProcessedData);
+
+            // reparse raw data into new Realm
             mRealmProcessedData.beginTransaction();
-            mRealmProcessedData.deleteAll();
             for (RawTagData rawTagData : mRealmRawData.where(RawTagData.class)
                     .findAllSorted(RawTagData.DATE, Sort.ASCENDING)) {
                 mRealmProcessedData.copyToRealmOrUpdate(new ReadingData(rawTagData));

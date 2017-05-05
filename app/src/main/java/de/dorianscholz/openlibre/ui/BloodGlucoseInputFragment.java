@@ -69,7 +69,7 @@ public class BloodGlucoseInputFragment extends DialogFragment {
             public void onClick(DialogInterface dialog, int which)
             {
                 float bloodGlucoseLevel = new Float(editTextGlucose.getText().toString()).floatValue();
-                // TODO: add user input for measurment time (maybe just as minutes since measurement)
+                // TODO: add user input for measurement time (maybe just as minutes since measurement)
                 long date = new Date().getTime();
                 saveBloodGlucoseLevel(date, bloodGlucoseLevel);
                 dialog.dismiss();

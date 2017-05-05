@@ -27,7 +27,7 @@ import static java.lang.Math.min;
 
 class LogRecyclerViewAdapter
         extends RealmRecyclerViewAdapter<ReadingData, LogRecyclerViewAdapter.LogRowViewHolder> {
-    private static final String LOG_ID = "GLUCOSE::" + LogRecyclerViewAdapter.class.getSimpleName();
+    private static final String LOG_ID = "OpenLibre::" + LogRecyclerViewAdapter.class.getSimpleName();
 
     private final LogFragment fragment;
 

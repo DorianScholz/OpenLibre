@@ -54,9 +54,9 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 public class DataPlotFragment extends Fragment implements OnChartValueSelectedListener, OnChartGestureListener {
-    private static final String LOG_ID = "GLUCOSE::" + DataPlotFragment.class.getSimpleName();
+    private static final String LOG_ID = "OpenLibre::" + DataPlotFragment.class.getSimpleName();
 
-    private final static int NUM_PLOT_COLORS = 1;
+    private final static int NUM_PLOT_COLORS = 3;
     private final static int[][] PLOT_COLORS = new int[][] {
             {Color.BLUE, Color.BLUE},
             {Color.MAGENTA, Color.RED},
@@ -296,6 +296,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
             return;
         }
 
+        mPlotColorIndex = 0;
         addLineData(history, trend);
 
         updatePlotTitle(trend != null);
@@ -315,20 +316,24 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         }
         lineData.addDataSet(makeLineData(history));
         if (trend != null) {
+            /*
             // connect history and trend data
             List<GlucoseData> connection = new ArrayList<>();
             connection.add(history.get(history.size() - 1));
             connection.add(trend.get(0));
             lineData.addDataSet(makeLineData(connection));
+            */
 
             // show trend data
             lineData.addDataSet(makeLineData(trend));
 
+            /*
             // also show regression data
             PredictionData predictionData = new PredictionData(trend);
             List<GlucoseData> prediction = predictionData.getPredictedData(
                     new int[]{trend.get(0).ageInSensorMinutes, trend.get(trend.size() - 1).ageInSensorMinutes});
             lineData.addDataSet(makeLineData(prediction));
+            */
         }
         mPlotColorIndex++;
         mPlot.setData(lineData);
@@ -387,9 +392,11 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         mPlot.setVisibleXRangeMinimum(minMinutesShown);
         mPlot.setVisibleXRangeMaximum(maxMinutesShown);
 
+        //ILineDataSet lineDataSet = mPlot.getData().getDataSetByIndex(mPlot.getData().getDataSetCount() - 1);
         mPlot.moveViewTo(
                 mPlot.getData().getXMax(),
-                (mPlot.getData().getYMax() + mPlot.getData().getYMin()) / 2,
+                (mPlot.getData().getYMax() + mPlot.getData().getYMin()) / 2, // center on all data
+                //lineDataSet.getEntryForIndex(lineDataSet.getEntryCount() - 1).getY(), // center on last data
                 mPlot.getAxisLeft().getAxisDependency()
         );
 
