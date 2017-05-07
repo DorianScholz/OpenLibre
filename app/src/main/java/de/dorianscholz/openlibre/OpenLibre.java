@@ -29,11 +29,7 @@ import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDi
 @ReportsCrashes(
         formUri = "http://www-stud.informatik.uni-frankfurt.de/~scholz/openlibre/report.php",
         reportType = HttpSender.Type.FORM,
-        // FIXME: This should be set to DIALOG to ask the user if he wants to send the report!
-        // for ACRA versions 4.9.0 this does not always work (Android 6)
-        // for 4.9.1 and .2 it shows the dialog, but crashes on the actual report sending
-        // 4.9.3 has this fixed supposedly but is not released yet (2017-05-04)
-        mode = ReportingInteractionMode.SILENT,
+        reportingInteractionMode = ReportingInteractionMode.DIALOG,
         resToastText = R.string.crash_toast_text,
         resDialogTitle = R.string.app_name,
         resDialogText = R.string.crash_dialog_text,
