@@ -1,11 +1,10 @@
 package de.dorianscholz.openlibre.model;
 
-import com.facebook.stetho.common.ArrayListAccumulator;
-
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TimeZone;
 
 import static java.lang.Math.min;
 
@@ -35,17 +34,18 @@ public class PredictionData {
         confidenceInterval = regression.getSlopeConfidenceInterval();
         int ageInSensorMinutes =
                 trendList.get(trendList.size() - 1).ageInSensorMinutes + PREDICTION_TIME;
-        glucoseData = new GlucoseData(trendList.get(0).sensor, ageInSensorMinutes, glucoseLevelRaw, true);
+        glucoseData = new GlucoseData(trendList.get(0).sensor, ageInSensorMinutes, trendList.get(0).timezoneOffsetInMinutes, glucoseLevelRaw, true);
     }
 
     public List<GlucoseData> getPredictedData(int[] ageInSensorMinutesList) {
+        int timezoneOffsetInMinutes = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000 / 60;
         List<GlucoseData> predictedData = new ArrayList<>();
         for (int ageInSensorMinutes : ageInSensorMinutesList) {
             int glucoseLevelRaw =
                 (int) regression.predict(ageInSensorMinutes -
                         (glucoseData.ageInSensorMinutes - (regression.getN() - 1 + PREDICTION_TIME))
                 );
-            predictedData.add(new GlucoseData(glucoseData.sensor, ageInSensorMinutes, glucoseLevelRaw, true));
+            predictedData.add(new GlucoseData(glucoseData.sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, true));
         }
         return predictedData;
     }

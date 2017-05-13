@@ -11,6 +11,7 @@ public class ReadingData extends RealmObject {
     public static final String SENSOR = "sensor";
     public static final String SENSOR_AGE_IN_MINUTES = "sensorAgeInMinutes";
     public static final String DATE = "date";
+    public static final String TIMEZONE_OFFSET_IN_MINUTES = "timezoneOffsetInMinutes";
     public static final String TREND = "trend";
     public static final String HISTORY = "history";
 
@@ -24,6 +25,7 @@ public class ReadingData extends RealmObject {
     private SensorData sensor;
     private int sensorAgeInMinutes = -1;
     public long date = -1;
+    public int timezoneOffsetInMinutes;
     public RealmList<GlucoseData> trend = new RealmList<>();
     public RealmList<GlucoseData> history = new RealmList<>();
 
@@ -31,6 +33,7 @@ public class ReadingData extends RealmObject {
     public ReadingData(RawTagData rawTagData) {
         id = rawTagData.id;
         date = rawTagData.date;
+        timezoneOffsetInMinutes = rawTagData.timezoneOffsetInMinutes;
         sensor = new SensorData(rawTagData.sensor);
 
         if (sensor.startDate < 0) {
@@ -62,7 +65,7 @@ public class ReadingData extends RealmObject {
                         counter * historyIntervalInMinutes;
                 int ageInSensorMinutes = sensorAgeDiscreteInMinutes - dataAgeInMinutes;
 
-                history.add(new GlucoseData(sensor, ageInSensorMinutes, glucoseLevelRaw, false));
+                history.add(new GlucoseData(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, false));
             }
         }
 
@@ -76,7 +79,7 @@ public class ReadingData extends RealmObject {
                 int dataAgeInMinutes = numTrendValues - counter;
                 int ageInSensorMinutes = sensorAgeInMinutes - dataAgeInMinutes;
 
-                trend.add(new GlucoseData(sensor, ageInSensorMinutes, glucoseLevelRaw, true));
+                trend.add(new GlucoseData(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, true));
             }
         }
     }

@@ -9,10 +9,8 @@ import org.acra.ACRA;
 import org.acra.ReportingInteractionMode;
 import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.io.IOException;
 
 import de.dorianscholz.openlibre.model.ProcessedDataModule;
 import de.dorianscholz.openlibre.model.RawDataModule;
@@ -22,7 +20,6 @@ import de.dorianscholz.openlibre.model.UserDataModule;
 import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.Sort;
-import io.realm.exceptions.RealmError;
 
 import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDisplayUnit;
 
@@ -87,39 +84,39 @@ public class OpenLibre extends Application {
                 .modules(new UserDataModule())
                 .directory(openLibreDataPath)
                 .name("data_user.realm")
-                .schemaVersion(1)
+                .schemaVersion(2)
+                .migration(new UserDataRealmMigration())
                 .build();
+
 
         realmConfigRawData = new RealmConfiguration.Builder()
                 .modules(new RawDataModule())
                 .directory(openLibreDataPath)
                 .name("data_raw.realm")
-                .schemaVersion(1)
+                .schemaVersion(2)
+                .migration(new RawDataRealmMigration())
                 .build();
-
-        Realm realmRawData = Realm.getInstance(realmConfigRawData);
-
-        migrateDefaultRealm(realmRawData);
 
         realmConfigProcessedData = new RealmConfiguration.Builder()
                 .modules(new ProcessedDataModule())
                 .directory(openLibreDataPath)
                 .name("data_processed.realm")
-                .schemaVersion(1)
+                .schemaVersion(2)
                 // delete processed data realm, if data structure changed
                 // it will just be parsed again from the raw data
                 .deleteRealmIfMigrationNeeded()
                 .build();
 
-        parseRawData(realmRawData);
-
-        realmRawData.close();
+        parseRawData();
 
         StethoUtils.install(this, openLibreDataPath);
     }
 
-    private void parseRawData(Realm realmRawData) {
+    private void parseRawData() {
+        Realm realmRawData = Realm.getInstance(realmConfigRawData);
         Realm realmProcessedData = Realm.getInstance(realmConfigProcessedData);
+
+        // if processed data realm is empty
         if (realmProcessedData.isEmpty() && !realmRawData.isEmpty()) {
             // parse data from raw realm into processed data realm
             Log.i(LOG_ID, "Parsing data raw_data realm to processed_data realm.");
@@ -130,85 +127,30 @@ public class OpenLibre extends Application {
             }
             realmProcessedData.commitTransaction();
         }
+
         realmProcessedData.close();
-    }
-
-    private void migrateDefaultRealm(Realm realmRawData) {
-        if (!realmRawData.isEmpty()) {
-            return;
-        }
-
-        // look for old format default realm in default location
-        RealmConfiguration defaultConfig = new RealmConfiguration.Builder()
-                .schemaVersion(2)
-                .migration(new DefaultRealmMigration())
-                .build();
-
-        Realm realmOldDefault = Realm.getInstance(defaultConfig);
-
-        if (realmOldDefault.isEmpty()) {
-            realmOldDefault.close();
-
-            // look for old format default realm in custom location
-            defaultConfig = new RealmConfiguration.Builder()
-                    .directory(openLibreDataPath)
-                    .schemaVersion(2)
-                    .migration(new DefaultRealmMigration())
-                    .build();
-
-            realmOldDefault = Realm.getInstance(defaultConfig);
-
-            if (realmOldDefault.isEmpty()) {
-                realmOldDefault.close();
-                return;
-            }
-        }
-
-        Log.i(LOG_ID, "Migrating data from default realm to raw_data realm.");
-        realmRawData.beginTransaction();
-        // copy raw data from old default realm into new raw data realm
-        for (RawTagData rawTagData : realmOldDefault.where(RawTagData.class).findAll()) {
-            realmRawData.copyToRealmOrUpdate(realmOldDefault.copyFromRealm(rawTagData));
-        }
-        realmRawData.commitTransaction();
-
-        realmOldDefault.close();
-
-        Log.i(LOG_ID, "Making backup of default realm.");
-        // backup and delete old default realm config since the data has been migrated
-        File source = new File(defaultConfig.getRealmDirectory(), defaultConfig.getRealmFileName());
-        File destination = new File(defaultConfig.getRealmDirectory(), "default.realm.backup");
-        try {
-            FileUtils.copyFile(source, destination);
-            Realm.deleteRealm(defaultConfig);
-        } catch (IOException e) {
-            Log.e(LOG_ID, "Could not backup default realm: " + e.toString());
-        }
+        realmRawData.close();
     }
 
     private File tryRealmStorage(File path) {
         // check where we can actually store the databases on this device
-        RealmConfiguration realmConfiguration;
-        // catch errors when creating directory
+        RealmConfiguration realmTestConfiguration;
+
+        // catch all errors when creating directory and db
         try {
-            realmConfiguration = new RealmConfiguration.Builder()
+            realmTestConfiguration = new RealmConfiguration.Builder()
                     .directory(path)
                     .name("test_storage.realm")
                     .deleteRealmIfMigrationNeeded()
                     .build();
-        } catch (IllegalArgumentException e) {
-            Log.e(LOG_ID, "Create realm failed for: '" + path.toString() + "': " + e.toString());
-            return null;
-        }
-        // catch errors when creating db files
-        try {
-            Realm testInstance = Realm.getInstance(realmConfiguration);
+            Realm testInstance = Realm.getInstance(realmTestConfiguration);
             testInstance.close();
-        } catch (RealmError e) {
-            Realm.deleteRealm(realmConfiguration);
-            Log.e(LOG_ID, "Create realm failed for: '" + path.toString() + "': " + e.toString());
+            Realm.deleteRealm(realmTestConfiguration);
+        } catch (Throwable e) {
+            Log.i(LOG_ID, "Test creation of realm failed for: '" + path.toString() + "': " + e.toString());
             return null;
         }
+
         return path;
     }
 

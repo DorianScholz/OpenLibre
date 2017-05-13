@@ -4,6 +4,7 @@ import android.support.annotation.NonNull;
 
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
@@ -15,15 +16,18 @@ public class BloodGlucoseData extends RealmObject implements Comparable<BloodGlu
     public static final String ID = "id";
     static final String GLUCOSE_LEVEL = "glucoseLevel";
     public static final String DATE = "date";
+    public static final String TIMEZONE_OFFSET_IN_MINUTES = "timezoneOffsetInMinutes";
 
     @PrimaryKey
     String id;
     float glucoseLevel = -1; // in mg/dl
     public long date;
+    public int timezoneOffsetInMinutes;
 
     public BloodGlucoseData() {}
     public BloodGlucoseData(long date, float glucoseLevel) {
         this.date = date;
+        timezoneOffsetInMinutes = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / 1000 / 60;
         this.glucoseLevel = glucoseLevel;
         id = String.format(Locale.US, "blood_%s", mFormatDateTime.format(new Date(date)));
     }

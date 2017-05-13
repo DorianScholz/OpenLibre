@@ -17,19 +17,22 @@ public class GlucoseData extends RealmObject implements Comparable<GlucoseData> 
     static final String GLUCOSE_LEVEL_RAW = "glucoseLevelRaw";
     public static final String IS_TREND_DATA = "isTrendData";
     public static final String DATE = "date";
+    public static final String TIMEZONE_OFFSET_IN_MINUTES = "timezoneOffsetInMinutes";
 
     @PrimaryKey
     String id;
-    SensorData sensor;
+    public SensorData sensor;
     public boolean isTrendData = false;
     public int ageInSensorMinutes = -1;
     int glucoseLevelRaw = -1; // in mg/l = 0.1 mg/dl
     public long date;
+    public int timezoneOffsetInMinutes;
 
     public GlucoseData() {}
-    public GlucoseData(SensorData sensor, int ageInSensorMinutes, int glucoseLevelRaw, boolean isTrendData) {
+    public GlucoseData(SensorData sensor, int ageInSensorMinutes, int timezoneOffsetInMinutes, int glucoseLevelRaw, boolean isTrendData) {
         this.sensor = sensor;
         this.ageInSensorMinutes = ageInSensorMinutes;
+        this.timezoneOffsetInMinutes = timezoneOffsetInMinutes;
         this.glucoseLevelRaw = glucoseLevelRaw;
         this.isTrendData = isTrendData;
         if (isTrendData)
@@ -67,6 +70,10 @@ public class GlucoseData extends RealmObject implements Comparable<GlucoseData> 
 
     public static String getDisplayUnit() {
         return GLUCOSE_UNIT_IS_MMOL ? "mmol/l" : "mg/dl";
+    }
+
+    public float glucose(boolean as_mmol) {
+        return as_mmol ? convertGlucoseRawToMMOL(glucoseLevelRaw) : convertGlucoseRawToMGDL(glucoseLevelRaw);
     }
 
     public float glucose() {
