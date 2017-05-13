@@ -47,8 +47,7 @@ public class BloodGlucoseInputFragment extends DialogFragment {
         {
             return super.onCreateView(inflater, container, savedInstanceState);
         } else {
-            View view = inflater.inflate(R.layout.fragment_blood_glucose_input, container, false);
-            return view;
+            return inflater.inflate(R.layout.fragment_blood_glucose_input, container, false);
         }
     }
 
@@ -68,7 +67,7 @@ public class BloodGlucoseInputFragment extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which)
             {
-                float bloodGlucoseLevel = new Float(editTextGlucose.getText().toString()).floatValue();
+                float bloodGlucoseLevel = Float.valueOf(editTextGlucose.getText().toString());
                 // TODO: add user input for measurement time (maybe just as minutes since measurement)
                 long date = new Date().getTime();
                 saveBloodGlucoseLevel(date, bloodGlucoseLevel);

@@ -19,6 +19,7 @@ class StethoUtils {
                                 .builder(application)
                                 .withFolder(dataPath)
                                 .withMetaTables()
+                                .withLimit(100000)
                                 .databaseNamePattern(Pattern.compile(".+\\.realm"))
                                 .build())
                         .build());

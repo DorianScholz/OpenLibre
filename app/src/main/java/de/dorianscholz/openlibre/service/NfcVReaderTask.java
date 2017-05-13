@@ -6,7 +6,6 @@ import android.nfc.Tag;
 import android.nfc.tech.NfcV;
 import android.os.AsyncTask;
 import android.os.Vibrator;
-import android.support.annotation.RequiresPermission;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -139,7 +138,7 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
 
                 updateProgressBar(blockIndex);
             }
-            Log.d(NfcVReaderTask.LOG_ID, "GOT LOG_ID DATA!");
+            Log.d(NfcVReaderTask.LOG_ID, "Got NFC tag data");
 
         } catch (Exception e) {
 
