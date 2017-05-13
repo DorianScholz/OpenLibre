@@ -4,10 +4,12 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.nfc.NfcAdapter;
 import android.nfc.NfcManager;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
@@ -38,6 +40,7 @@ import de.dorianscholz.openlibre.model.RawTagData;
 import de.dorianscholz.openlibre.model.ReadingData;
 import de.dorianscholz.openlibre.model.SensorData;
 import de.dorianscholz.openlibre.service.NfcVReaderTask;
+import de.dorianscholz.openlibre.service.TidepoolSynchronization;
 import io.realm.Realm;
 import io.realm.RealmResults;
 import io.realm.Sort;
@@ -162,14 +165,33 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+
+        // show debug menu only in developer mode
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        boolean developerMode = settings.getBoolean("pref_developer_mode", false);
+        MenuItem debugMenuItem = menu.findItem(R.id.action_debug_menu);
+        debugMenuItem.setVisible(developerMode);
+
+        String tidepoolUsername = settings.getString("pref_tidepool_username", "");
+        String tidepoolPassword = settings.getString("pref_tidepool_password", "");
+        MenuItem tidepoolMenuItem = menu.findItem(R.id.action_tidepool_status);
+        tidepoolMenuItem.setVisible((!tidepoolUsername.equals("") && !tidepoolPassword.equals("")));
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
+
         } else if (id == R.id.action_show_last_scan) {
-            // TODO: clearly show that this is not a current scan
             RealmResults<ReadingData> readingDataResults = mRealmProcessedData.where(ReadingData.class).
                     findAllSorted(ReadingData.DATE, Sort.DESCENDING);
             if (readingDataResults.size() == 0) {
@@ -182,15 +204,9 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             return true;
 
         } else if (id == R.id.action_show_full_history) {
-            // TODO: clearly show that this is not a current scan
             List<GlucoseData> history = mRealmProcessedData.where(GlucoseData.class).
                     equalTo(GlucoseData.IS_TREND_DATA, false).
                     findAllSorted(GlucoseData.DATE, Sort.ASCENDING);
-            /*
-            List<GlucoseData> trend = mRealmProcessedData.where(GlucoseData.class).
-                    equalTo(GlucoseData.IS_TREND_DATA, true).
-                    findAllSorted(GlucoseData.DATE, Sort.ASCENDING);
-            */
             ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
                     .clearScanData();
             ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
@@ -206,6 +222,11 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
         } else if (id == R.id.action_show_fpu_calculator) {
             DialogFragment fpuCalculatorFragment = new FPUCalculatorFragment();
             fpuCalculatorFragment.show(getSupportFragmentManager(), "fpucalculator");
+            return true;
+
+        } else if (id == R.id.action_tidepool_status) {
+            DialogFragment tidepoolStatusFragment = new TidepoolStatusFragment();
+            tidepoolStatusFragment.show(getSupportFragmentManager(), "tidepoolstatus");
             return true;
 
         } else if (id == R.id.action_show_sensor_status) {
@@ -370,6 +391,7 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
     public void onNfcReadingFinished(ReadingData readingData) {
         mLastScanTime = new Date().getTime();
         onShowScanData(readingData);
+        TidepoolSynchronization.getInstance().startTriggeredSynchronization(getApplicationContext());
     }
 
 

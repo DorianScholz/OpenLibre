@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array
+        name="pref_tidepool_server_entries">
+        <item>Production</item>
+        <item>Staging</item>
+        <item>Development</item>
+    </string-array>
+
+    <string-array
+        name="pref_tidepool_server_values">
+        <item>Production</item>
+        <item>Staging</item>
+        <item>Development</item>
+    </string-array>
+</resources>
