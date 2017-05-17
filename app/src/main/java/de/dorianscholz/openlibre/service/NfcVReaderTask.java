@@ -171,17 +171,9 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
         Realm realmProcessedData = Realm.getInstance(realmConfigProcessedData);
         Realm realmRawData = Realm.getInstance(realmConfigRawData);
 
-        SensorData sensor;
-        RealmResults<SensorData> sensorResults = realmProcessedData.where(SensorData.class).contains(SensorData.ID, sensorTagId).findAll();
-        if (sensorResults.size() > 0) {
-            sensor = sensorResults.first();
-        } else {
-            sensor = new SensorData(sensorTagId);
-        }
-
         // commit raw data into realm for debugging
         realmRawData.beginTransaction();
-        RawTagData rawTagData = realmRawData.copyToRealmOrUpdate(new RawTagData(sensor, data));
+        RawTagData rawTagData = realmRawData.copyToRealmOrUpdate(new RawTagData(sensorTagId, data));
         realmRawData.commitTransaction();
 
         // commit processed data into realm

@@ -68,6 +68,15 @@ public class OpenLibre extends Application {
 
         Realm.init(this);
 
+        setupRealm(getApplicationContext());
+
+        parseRawData();
+
+        StethoUtils.install(this, openLibreDataPath);
+    }
+
+    public static void setupRealm(Context context) {
+
         // find a storage path that we can actually create a realm in
         if ((openLibreDataPath =
                 tryRealmStorage(new File(Environment.getExternalStorageDirectory().getPath(), "openlibre")))
@@ -75,7 +84,7 @@ public class OpenLibre extends Application {
             if ((openLibreDataPath =
                     tryRealmStorage(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)))
                         == null) {
-                openLibreDataPath = getApplicationContext().getFilesDir();
+                openLibreDataPath = context.getFilesDir();
             }
         }
         Log.i(LOG_ID, "Using data path: '" + openLibreDataPath.toString() + "'");
@@ -93,7 +102,7 @@ public class OpenLibre extends Application {
                 .modules(new RawDataModule())
                 .directory(openLibreDataPath)
                 .name("data_raw.realm")
-                .schemaVersion(2)
+                .schemaVersion(3)
                 .migration(new RawDataRealmMigration())
                 .build();
 
@@ -106,13 +115,9 @@ public class OpenLibre extends Application {
                 // it will just be parsed again from the raw data
                 .deleteRealmIfMigrationNeeded()
                 .build();
-
-        parseRawData();
-
-        StethoUtils.install(this, openLibreDataPath);
     }
 
-    private void parseRawData() {
+    static void parseRawData() {
         Realm realmRawData = Realm.getInstance(realmConfigRawData);
         Realm realmProcessedData = Realm.getInstance(realmConfigProcessedData);
 
@@ -132,7 +137,7 @@ public class OpenLibre extends Application {
         realmRawData.close();
     }
 
-    private File tryRealmStorage(File path) {
+    private static File tryRealmStorage(File path) {
         // check where we can actually store the databases on this device
         RealmConfiguration realmTestConfiguration;
 

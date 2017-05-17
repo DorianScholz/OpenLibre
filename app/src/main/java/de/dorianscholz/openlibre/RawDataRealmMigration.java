@@ -54,5 +54,23 @@ class RawDataRealmMigration implements RealmMigration {
 
             //oldVersion++;
         }
+
+        // Migrate from version 2 to version 3
+        if (oldVersion == 2) {
+            RealmObjectSchema rawTagDataSchema = schema.get("RawTagData");
+            rawTagDataSchema
+                    .addField("tagId", String.class)
+                    .transform(new RealmObjectSchema.Function() {
+                        @Override
+                        public void apply(DynamicRealmObject obj) {
+                            String tagId = obj.getString("id").split("_")[1];
+                            obj.set("tagId", tagId);
+                        }
+                    })
+                    .removeField("sensor");
+            schema.remove("SensorData");
+
+            //oldVersion++;
+        }
     }
 }

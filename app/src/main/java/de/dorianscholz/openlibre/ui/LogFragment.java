@@ -88,8 +88,8 @@ public class LogFragment extends Fragment {
 
     public void deleteScanData(final ReadingData readingData) {
         mRealmProcessedData.beginTransaction();
-        readingData.history.deleteAllFromRealm();
-        readingData.trend.deleteAllFromRealm();
+        readingData.getHistory().deleteAllFromRealm();
+        readingData.getTrend().deleteAllFromRealm();
         readingData.deleteFromRealm();
         mRealmProcessedData.commitTransaction();
     }

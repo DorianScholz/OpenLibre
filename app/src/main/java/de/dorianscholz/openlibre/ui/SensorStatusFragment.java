@@ -55,7 +55,7 @@ public class SensorStatusFragment extends DialogFragment {
             SensorData sensorData = sensorDataResults.first();
             sensorId.setText(sensorData.getTagId());
             DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT);
-            sensorStartDate.setText(dateFormat.format(new Date(sensorData.startDate)));
+            sensorStartDate.setText(dateFormat.format(new Date(sensorData.getStartDate())));
             long timeLeft = sensorData.getTimeLeft();
             if (timeLeft >= TimeUnit.MINUTES.toMillis(1L)) {
                 sensorEndsIn.setText(getDurationBreakdown(getResources(), sensorData.getTimeLeft()));

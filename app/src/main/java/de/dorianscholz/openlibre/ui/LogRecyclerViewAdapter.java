@@ -52,16 +52,16 @@ class LogRecyclerViewAdapter
             holder.itemView.setVisibility(View.GONE);
             return;
         }
-        if (readingData.trend.size() == 0) {
+        if (readingData.getTrend().size() == 0) {
             Log.e(LOG_ID, "No trend data at position: " + position);
             holder.itemView.setVisibility(View.GONE);
             return;
         }
         holder.itemView.setVisibility(View.VISIBLE);
-        PredictionData predictedGlucose = new PredictionData(readingData.trend);
+        PredictionData predictedGlucose = new PredictionData(readingData.getTrend());
         holder.readingData = readingData;
-        holder.tv_date.setText(mFormatDate.format(new Date(readingData.date)));
-        holder.tv_time.setText(mFormatTimeShort.format(new Date(readingData.date)));
+        holder.tv_date.setText(mFormatDate.format(new Date(readingData.getDate())));
+        holder.tv_time.setText(mFormatTimeShort.format(new Date(readingData.getDate())));
         holder.tv_glucose.setText(predictedGlucose.glucoseData.glucoseString());
         if (GLUCOSE_UNIT_IS_MMOL) {
             holder.iv_unit.setImageResource(R.drawable.ic_unit_mmoll);

@@ -26,15 +26,15 @@ public class PredictionData {
         }
         regression = new SimpleRegression();
         for (int i = 0; i < trendList.size(); i++) {
-            regression.addData(i, (trendList.get(i)).glucoseLevelRaw);
+            regression.addData(i, (trendList.get(i)).getGlucoseLevelRaw());
         }
         int glucoseLevelRaw =
                 (int) regression.predict(regression.getN() - 1 + PREDICTION_TIME);
         glucoseSlopeRaw = regression.getSlope();
         confidenceInterval = regression.getSlopeConfidenceInterval();
         int ageInSensorMinutes =
-                trendList.get(trendList.size() - 1).ageInSensorMinutes + PREDICTION_TIME;
-        glucoseData = new GlucoseData(trendList.get(0).sensor, ageInSensorMinutes, trendList.get(0).timezoneOffsetInMinutes, glucoseLevelRaw, true);
+                trendList.get(trendList.size() - 1).getAgeInSensorMinutes() + PREDICTION_TIME;
+        glucoseData = new GlucoseData(trendList.get(0).getSensor(), ageInSensorMinutes, trendList.get(0).getTimezoneOffsetInMinutes(), glucoseLevelRaw, true);
     }
 
     public List<GlucoseData> getPredictedData(int[] ageInSensorMinutesList) {
@@ -43,9 +43,9 @@ public class PredictionData {
         for (int ageInSensorMinutes : ageInSensorMinutesList) {
             int glucoseLevelRaw =
                 (int) regression.predict(ageInSensorMinutes -
-                        (glucoseData.ageInSensorMinutes - (regression.getN() - 1 + PREDICTION_TIME))
+                        (glucoseData.getAgeInSensorMinutes() - (regression.getN() - 1 + PREDICTION_TIME))
                 );
-            predictedData.add(new GlucoseData(glucoseData.sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, true));
+            predictedData.add(new GlucoseData(glucoseData.getSensor(), ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, true));
         }
         return predictedData;
     }

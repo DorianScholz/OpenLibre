@@ -19,10 +19,10 @@ public class BloodGlucoseData extends RealmObject implements Comparable<BloodGlu
     public static final String TIMEZONE_OFFSET_IN_MINUTES = "timezoneOffsetInMinutes";
 
     @PrimaryKey
-    String id;
-    float glucoseLevel = -1; // in mg/dl
-    public long date;
-    public int timezoneOffsetInMinutes;
+    private String id;
+    private float glucoseLevel = -1; // in mg/dl
+    private long date;
+    private int timezoneOffsetInMinutes;
 
     public BloodGlucoseData() {}
     public BloodGlucoseData(long date, float glucoseLevel) {
@@ -43,5 +43,13 @@ public class BloodGlucoseData extends RealmObject implements Comparable<BloodGlu
     @Override
     public int compareTo(@NonNull BloodGlucoseData another) {
         return (int) (date - another.date);
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+    public int getTimezoneOffsetInMinutes() {
+        return timezoneOffsetInMinutes;
     }
 }

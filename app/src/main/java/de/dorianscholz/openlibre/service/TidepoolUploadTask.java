@@ -127,14 +127,14 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
                     DeviceDataCBG deviceDataCBG = new DeviceDataCBG();
                     GlucoseData glucoseData = newGlucoseData.get(i);
 
-                    deviceDataCBG.setDeviceId(glucoseData.sensor.id);
+                    deviceDataCBG.setDeviceId(glucoseData.getSensor().getId());
                     deviceDataCBG.setUploadId("");
 
                     deviceDataCBG.setUnits("mmol/L");
                     deviceDataCBG.setValue(glucoseData.glucose(true));
 
-                    deviceDataCBG.setTime(new Date(glucoseData.date));
-                    deviceDataCBG.setTimezoneOffset(glucoseData.timezoneOffsetInMinutes);
+                    deviceDataCBG.setTime(new Date(glucoseData.getDate()));
+                    deviceDataCBG.setTimezoneOffset(glucoseData.getTimezoneOffsetInMinutes());
 
                     deviceDataCBGs.add(deviceDataCBG);
                 }

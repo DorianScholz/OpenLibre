@@ -221,7 +221,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
 
         for (ReadingData readingData : readingDataList) {
-            addLineData(readingData.history, readingData.trend);
+            addLineData(readingData.getHistory(), readingData.getTrend());
         }
 
         updatePlotTitle(false);
@@ -242,8 +242,8 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
         mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
 
-        updateScanData(readData.trend);
-        updatePlot(readData.history, readData.trend);
+        updateScanData(readData.getTrend());
+        updatePlot(readData.getHistory(), readData.getTrend());
     }
 
     private void updateScanData(List<GlucoseData> trend) {
@@ -306,7 +306,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
 
     private void addLineData(List<GlucoseData> history, List<GlucoseData> trend) {
         if (mFirstDate < 0) {
-            mFirstDate = history.get(0).date;
+            mFirstDate = history.get(0).getDate();
             mDateTimeMarkerView.setFirstDate(mFirstDate);
         }
 
@@ -405,11 +405,11 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
 
     private LineDataSet makeLineData(List<GlucoseData> glucoseDataList) {
         String title = "History";
-        if (glucoseDataList.get(0).isTrendData) title = "Trend";
+        if (glucoseDataList.get(0).isTrendData()) title = "Trend";
 
         LineDataSet lineDataSet = new LineDataSet(new ArrayList<Entry>(), title);
         for (GlucoseData gd : glucoseDataList) {
-            float x = convertDateToXAxisValue(gd.date);
+            float x = convertDateToXAxisValue(gd.getDate());
             float y = gd.glucose();
             lineDataSet.addEntryOrdered(new Entry(x, y));
             /*
@@ -435,7 +435,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         int baseColor = PLOT_COLORS[mPlotColorIndex % NUM_PLOT_COLORS][0];
         int softColor = Color.argb(150, Color.red(baseColor), Color.green(baseColor), Color.blue(baseColor));
         int hardColor = PLOT_COLORS[mPlotColorIndex % NUM_PLOT_COLORS][1];
-        if (glucoseDataList.get(0).isTrendData) {
+        if (glucoseDataList.get(0).isTrendData()) {
             lineDataSet.setColor(hardColor);
             lineDataSet.setLineWidth(2f);
 

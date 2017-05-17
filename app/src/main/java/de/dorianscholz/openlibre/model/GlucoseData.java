@@ -12,36 +12,42 @@ import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_UNIT_IS_MMOL;
 
 public class GlucoseData extends RealmObject implements Comparable<GlucoseData> {
     public static final String ID = "id";
-    static final String SENSOR = "sensor";
-    static final String AGE_IN_SENSOR_MINUTES = "ageInSensorMinutes";
-    static final String GLUCOSE_LEVEL_RAW = "glucoseLevelRaw";
+    public static final String SENSOR = "sensor";
+    public static final String AGE_IN_SENSOR_MINUTES = "ageInSensorMinutes";
+    public static final String GLUCOSE_LEVEL_RAW = "glucoseLevelRaw";
     public static final String IS_TREND_DATA = "isTrendData";
     public static final String DATE = "date";
     public static final String TIMEZONE_OFFSET_IN_MINUTES = "timezoneOffsetInMinutes";
 
     @PrimaryKey
-    String id;
-    public SensorData sensor;
-    public boolean isTrendData = false;
-    public int ageInSensorMinutes = -1;
-    int glucoseLevelRaw = -1; // in mg/l = 0.1 mg/dl
-    public long date;
-    public int timezoneOffsetInMinutes;
+    private String id;
+    private SensorData sensor;
+    private boolean isTrendData = false;
+    private int ageInSensorMinutes = -1;
+    private int glucoseLevelRaw = -1; // in mg/l = 0.1 mg/dl
+    private long date;
+    private int timezoneOffsetInMinutes;
 
     public GlucoseData() {}
-    public GlucoseData(SensorData sensor, int ageInSensorMinutes, int timezoneOffsetInMinutes, int glucoseLevelRaw, boolean isTrendData) {
+    public GlucoseData(SensorData sensor, int ageInSensorMinutes, int timezoneOffsetInMinutes, int glucoseLevelRaw, boolean isTrendData, long date) {
         this.sensor = sensor;
         this.ageInSensorMinutes = ageInSensorMinutes;
         this.timezoneOffsetInMinutes = timezoneOffsetInMinutes;
         this.glucoseLevelRaw = glucoseLevelRaw;
         this.isTrendData = isTrendData;
-        if (isTrendData)
-            id = String.format(Locale.US, "trend_%s_%05d", sensor.id, ageInSensorMinutes);
-        else
-            id = String.format(Locale.US, "history_%s_%05d", sensor.id, ageInSensorMinutes);
-        date = sensor.startDate + TimeUnit.MINUTES.toMillis(ageInSensorMinutes);
+        this.date = date;
+        id = generateId(sensor, ageInSensorMinutes, isTrendData);
+    }
+    public GlucoseData(SensorData sensor, int ageInSensorMinutes, int timezoneOffsetInMinutes, int glucoseLevelRaw, boolean isTrendData) {
+        this(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, isTrendData, sensor.getStartDate() + TimeUnit.MINUTES.toMillis(ageInSensorMinutes));
     }
 
+    public static String generateId(SensorData sensor, int ageInSensorMinutes, boolean isTrendData) {
+        if (isTrendData)
+            return String.format(Locale.US, "trend_%s_%05d", sensor.getId(), ageInSensorMinutes);
+        else
+            return String.format(Locale.US, "history_%s_%05d", sensor.getId(), ageInSensorMinutes);
+    }
 /*
     static float convertGlucoseMMOLToMGDL(float mmol) {
         return mmol * 18f;
@@ -91,6 +97,43 @@ public class GlucoseData extends RealmObject implements Comparable<GlucoseData> 
 
     @Override
     public int compareTo(@NonNull GlucoseData another) {
-        return (int) (date - another.date);
+        return (int) (getDate() - another.getDate());
+    }
+
+    public SensorData getSensor() {
+        return sensor;
+    }
+
+    public void setSensor(SensorData sensor) {
+        this.sensor = sensor;
+    }
+
+    public boolean isTrendData() {
+        return isTrendData;
+    }
+
+    public int getAgeInSensorMinutes() {
+        return ageInSensorMinutes;
+    }
+
+    public long getDate() {
+        return date;
+    }
+
+
+    public int getTimezoneOffsetInMinutes() {
+        return timezoneOffsetInMinutes;
+    }
+
+    public void setTimezoneOffsetInMinutes(int timezoneOffsetInMinutes) {
+        this.timezoneOffsetInMinutes = timezoneOffsetInMinutes;
+    }
+
+    int getGlucoseLevelRaw() {
+        return glucoseLevelRaw;
+    }
+
+    public String getId() {
+        return id;
     }
 }
