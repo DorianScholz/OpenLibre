@@ -18,10 +18,8 @@ import de.dorianscholz.openlibre.OpenLibre;
 import de.dorianscholz.openlibre.R;
 import de.dorianscholz.openlibre.model.RawTagData;
 import de.dorianscholz.openlibre.model.ReadingData;
-import de.dorianscholz.openlibre.model.SensorData;
 import de.dorianscholz.openlibre.ui.MainActivity;
 import io.realm.Realm;
-import io.realm.RealmResults;
 
 import static android.content.Context.VIBRATOR_SERVICE;
 import static android.media.AudioManager.RINGER_MODE_SILENT;
@@ -103,12 +101,12 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
         try {
             nfcvTag.connect();
             final byte[] uid = tag.getId();
-            final int step = OpenLibre.FLAG_READ_MULTIPLE_BLOCKS ? 3 : 1;
+            final int step = OpenLibre.NFC_USE_MULTI_BLOCK_READ ? 3 : 1;
             final int blockSize = 8;
 
             for (int blockIndex = 0; blockIndex <= 40; blockIndex += step) {
                 byte[] cmd;
-                if (OpenLibre.FLAG_READ_MULTIPLE_BLOCKS) {
+                if (OpenLibre.NFC_USE_MULTI_BLOCK_READ) {
                     cmd = new byte[]{0x02, 0x23, (byte) blockIndex, 0x02}; // multi-block read 3 blocks
                 } else {
                     cmd = new byte[]{0x60, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, (byte) blockIndex, 0};
@@ -129,7 +127,7 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
                     }
                 }
 
-                if (OpenLibre.FLAG_READ_MULTIPLE_BLOCKS) {
+                if (OpenLibre.NFC_USE_MULTI_BLOCK_READ) {
                     System.arraycopy(readData, 1, data, blockIndex * blockSize, readData.length - 1);
                 } else {
                     readData = Arrays.copyOfRange(readData, 2, readData.length);

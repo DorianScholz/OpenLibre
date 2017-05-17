@@ -48,13 +48,12 @@ public class GlucoseData extends RealmObject implements Comparable<GlucoseData> 
         else
             return String.format(Locale.US, "history_%s_%05d", sensor.getId(), ageInSensorMinutes);
     }
-/*
-    static float convertGlucoseMMOLToMGDL(float mmol) {
+
+    public static float convertGlucoseMMOLToMGDL(float mmol) {
         return mmol * 18f;
     }
-*/
 
-    private static float convertGlucoseMGDLToMMOL(float mgdl) {
+    public static float convertGlucoseMGDLToMMOL(float mgdl) {
         return mgdl / 18f;
     }
 

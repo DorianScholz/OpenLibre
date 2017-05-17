@@ -34,6 +34,8 @@
     <string name="pref_glucose_unit">Unit</string>
     <string name="pref_glucose_unit_summary">Set the unit of measurement</string>
     <string name="pref_glucose_target_area">Target Area</string>
+    <string name="pref_glucose_target_min">Glucose Target Minimum</string>
+    <string name="pref_glucose_target_max">Glucose Target Maximum</string>
 
     <string name="pref_rotation_lock">Rotation Lock</string>
     <string name="pref_rotation_lock_sum">Keep portrait orientation</string>
@@ -103,4 +105,8 @@
     <string name="pref_tidepool_server_summary">Tidepool server to use (default: Production).</string>
     <string name="pref_developer_mode">Developer Mode</string>
     <string name="pref_developer_mode_summary">Show advanced options for the developer.</string>
+    <string name="pref_glucose_unit_is_mmol">Glucose unit is mmol/L</string>
+    <string name="pref_glucose_unit_is_mmol_summary">If checked, show glucose values in mmol/L otherwise in mg/dL.</string>
+    <string name="pref_nfc_use_multi_block_read">Use NFC Block Mode</string>
+    <string name="pref_nfc_use_multi_block_read_summary">Read sensor quicker in NFC multi-block mode (disable if you have problems reading the sensor).</string>
 </resources>

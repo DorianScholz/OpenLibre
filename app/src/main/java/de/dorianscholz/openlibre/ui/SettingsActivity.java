@@ -4,8 +4,16 @@ import android.app.Activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.renderscript.Float2;
 
 import io.tidepool.api.APIClient;
+
+import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_TARGET_MAX;
+import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_TARGET_MIN;
+import static de.dorianscholz.openlibre.OpenLibre.GLUCOSE_UNIT_IS_MMOL;
+import static de.dorianscholz.openlibre.OpenLibre.refreshApplicationSettings;
+import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToMMOL;
+import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMMOLToMGDL;
 
 public class SettingsActivity extends Activity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -29,6 +37,7 @@ public class SettingsActivity extends Activity implements SharedPreferences.OnSh
             String tidepoolUsername = settings.getString("pref_tidepool_username", "").trim();
             SharedPreferences.Editor editor = settings.edit();
             editor.putString("pref_tidepool_username", tidepoolUsername);
+            editor.apply();
 
             String tidepoolServer = settings.getString("pref_tidepool_server", APIClient.PRODUCTION);
 
@@ -36,6 +45,23 @@ public class SettingsActivity extends Activity implements SharedPreferences.OnSh
             preferencesEditor.putString("upload_timestamp_key", "upload_timestamp_for_" + tidepoolUsername.toLowerCase() + "_at_" + tidepoolServer);
             preferencesEditor.apply();
 
+        }
+
+        if (key.equals("pref_glucose_unit_is_mmol")) {
+            GLUCOSE_UNIT_IS_MMOL = settings.getBoolean("pref_glucose_unit_is_mmol", GLUCOSE_UNIT_IS_MMOL);
+            SharedPreferences.Editor editor = settings.edit();
+            if (GLUCOSE_UNIT_IS_MMOL) {
+                editor.putString("pref_glucose_target_min", Float.toString(convertGlucoseMGDLToMMOL(GLUCOSE_TARGET_MIN)));
+                editor.putString("pref_glucose_target_max", Float.toString(convertGlucoseMGDLToMMOL(GLUCOSE_TARGET_MAX)));
+            } else {
+                editor.putString("pref_glucose_target_min", Float.toString(convertGlucoseMMOLToMGDL(GLUCOSE_TARGET_MIN)));
+                editor.putString("pref_glucose_target_max", Float.toString(convertGlucoseMMOLToMGDL(GLUCOSE_TARGET_MAX)));
+            }
+            editor.apply();
+            refreshApplicationSettings(settings);
+        }
+        if (key.equals("pref_glucose_target_min") || key.equals("pref_glucose_target_max")) {
+            refreshApplicationSettings(settings);
         }
     }
 

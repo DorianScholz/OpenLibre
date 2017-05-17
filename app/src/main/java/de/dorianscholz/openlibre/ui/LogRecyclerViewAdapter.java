@@ -1,5 +1,7 @@
 package de.dorianscholz.openlibre.ui;
 
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -26,7 +28,8 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 
 class LogRecyclerViewAdapter
-        extends RealmRecyclerViewAdapter<ReadingData, LogRecyclerViewAdapter.LogRowViewHolder> {
+        extends RealmRecyclerViewAdapter<ReadingData, LogRecyclerViewAdapter.LogRowViewHolder>
+        implements SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String LOG_ID = "OpenLibre::" + LogRecyclerViewAdapter.class.getSimpleName();
 
     private final LogFragment fragment;
@@ -34,6 +37,7 @@ class LogRecyclerViewAdapter
     LogRecyclerViewAdapter(LogFragment fragment, OrderedRealmCollection<ReadingData> data) {
         super(fragment.getActivity(), data, true);
         this.fragment = fragment;
+        PreferenceManager.getDefaultSharedPreferences(context).registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
@@ -75,6 +79,13 @@ class LogRecyclerViewAdapter
         holder.iv_predictionArrow.setAlpha((float) min(1, 0.1 + predictedGlucose.confidence()));
     }
 
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals("pref_glucose_unit_is_mmol")) {
+            notifyDataSetChanged();
+        }
+    }
+
     class LogRowViewHolder
             extends RecyclerView.ViewHolder
             implements View.OnClickListener, View.OnCreateContextMenuListener, MenuItem.OnMenuItemClickListener  {
@@ -92,8 +103,14 @@ class LogRecyclerViewAdapter
             tv_glucose = (TextView) view.findViewById(R.id.tv_log_glucose);
             iv_unit = (ImageView) view.findViewById(R.id.iv_log_unit);
             iv_predictionArrow = (ImageView) view.findViewById(R.id.iv_log_prediction);
-            view.setOnCreateContextMenuListener(this);
             view.setOnClickListener(this);
+
+            // enable context menu only in developer mode
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            boolean developerMode = settings.getBoolean("pref_developer_mode", false);
+            if (developerMode) {
+                view.setOnCreateContextMenuListener(this);
+            }
         }
 
         @Override

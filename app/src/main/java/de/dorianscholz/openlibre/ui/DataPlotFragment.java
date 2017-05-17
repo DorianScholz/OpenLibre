@@ -1,7 +1,9 @@
 package de.dorianscholz.openlibre.ui;
 
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
@@ -53,7 +55,8 @@ import static de.dorianscholz.openlibre.model.GlucoseData.getDisplayUnit;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
-public class DataPlotFragment extends Fragment implements OnChartValueSelectedListener, OnChartGestureListener {
+public class DataPlotFragment extends Fragment
+        implements OnChartValueSelectedListener, OnChartGestureListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String LOG_ID = "OpenLibre::" + DataPlotFragment.class.getSimpleName();
 
     private final static int NUM_PLOT_COLORS = 3;
@@ -80,9 +83,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         mDataPlotView = inflater.inflate(R.layout.fragment_scan, container, false);
-        ((ProgressBar) mDataPlotView.findViewById(R.id.pb_scan_circle)).setProgress(0);
-        mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.VISIBLE);
-        mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.INVISIBLE);
+        resetView();
 
         mUpdatePlotTitleTimer = new Timer();
 
@@ -90,9 +91,17 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
 
         clearScanData();
 
+        PreferenceManager.getDefaultSharedPreferences(getContext()).registerOnSharedPreferenceChangeListener(this);
+
         return mDataPlotView;
     }
-    
+
+    private void resetView() {
+        ((ProgressBar) mDataPlotView.findViewById(R.id.pb_scan_circle)).setProgress(0);
+        mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.VISIBLE);
+        mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.INVISIBLE);
+    }
+
     @Override
     public void onDetach() {
         super.onDetach();
@@ -100,7 +109,14 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
             mUpdatePlotTitleTask.cancel();
         }
     }
-    
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if (key.equals("pref_glucose_unit_is_mmol") || key.equals("pref_glucose_target_min") || key.equals("pref_glucose_target_max")) {
+            resetView();
+        }
+    }
+
     private void setupPlot() {
         mPlot = (LineChart) mDataPlotView.findViewById(R.id.cv_glucose_plot);
         mPlot.setNoDataText("");
@@ -185,6 +201,22 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         YAxis rightAxis = mPlot.getAxisRight();
         rightAxis.setEnabled(false);
 
+        updateTargetArea();
+
+        try {
+            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
+                mPlot.setHardwareAccelerationEnabled(false);
+            } else {
+                mPlot.setHardwareAccelerationEnabled(true);
+            }
+        } catch (Exception e) {
+            Log.d(LOG_ID, "Hardware acceleration for data plot failed: " + e.toString());
+        }
+    }
+
+    private void updateTargetArea() {
+        YAxis leftAxis = mPlot.getAxisLeft();
+        leftAxis.removeAllLimitLines();
         LimitLine limitLineMax = new LimitLine(
                 GLUCOSE_TARGET_MAX
         );
@@ -199,16 +231,6 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
         limitLineMin.setLineColor(Color.argb(60, 100, 100, 120));
         limitLineMin.setLabelPosition(LimitLine.LimitLabelPosition.RIGHT_TOP);
         leftAxis.addLimitLine(limitLineMin);
-
-        try {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-                mPlot.setHardwareAccelerationEnabled(false);
-            } else {
-                mPlot.setHardwareAccelerationEnabled(true);
-            }
-        } catch (Exception e) {
-            Log.d(LOG_ID, "Hardware acceleration for data plot failed: " + e.toString());
-        }
     }
 
     public void clearScanData() {
@@ -216,6 +238,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     }
 
     public void showMultipleScans(List<ReadingData> readingDataList) {
+        updateTargetArea();
         mPlot.clear();
         mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
         mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
@@ -230,6 +253,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     }
 
     void showHistory(List<GlucoseData> history, List<GlucoseData> trend) {
+        updateTargetArea();
         mPlot.clear();
         mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
         mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
@@ -238,6 +262,7 @@ public class DataPlotFragment extends Fragment implements OnChartValueSelectedLi
     }
 
     void showScan(ReadingData readData) {
+        updateTargetArea();
         mPlot.clear();
         mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
         mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);

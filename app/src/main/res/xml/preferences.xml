@@ -6,6 +6,30 @@
         android:title="@string/app_name">
 
         <CheckBoxPreference
+            android:key="pref_glucose_unit_is_mmol"
+            android:title="@string/pref_glucose_unit_is_mmol"
+            android:summary="@string/pref_glucose_unit_is_mmol_summary"
+            android:defaultValue="false" />
+
+        <EditTextPreference
+            android:key="pref_glucose_target_max"
+            android:title="@string/pref_glucose_target_max"
+            android:dialogTitle="@string/pref_glucose_target_max"
+            android:inputType="numberDecimal"/>
+
+        <EditTextPreference
+            android:key="pref_glucose_target_min"
+            android:title="@string/pref_glucose_target_min"
+            android:dialogTitle="@string/pref_glucose_target_min"
+            android:inputType="numberDecimal"/>
+
+        <CheckBoxPreference
+            android:key="pref_nfc_use_multi_block_read"
+            android:title="@string/pref_nfc_use_multi_block_read"
+            android:summary="@string/pref_nfc_use_multi_block_read_summary"
+            android:defaultValue="true" />
+
+        <CheckBoxPreference
             android:key="pref_developer_mode"
             android:title="@string/pref_developer_mode"
             android:summary="@string/pref_developer_mode_summary"
@@ -28,7 +52,7 @@
             android:dependency="pref_tidepool_username"
             android:title="@string/pref_password"
             android:dialogTitle="@string/pref_password"
-            android:password="true" />
+            android:inputType="textPassword" />
 
         <ListPreference
             android:key="pref_tidepool_server"

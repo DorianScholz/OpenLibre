@@ -2,7 +2,9 @@ package de.dorianscholz.openlibre;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Environment;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import org.acra.ACRA;
@@ -21,8 +23,6 @@ import io.realm.Realm;
 import io.realm.RealmConfiguration;
 import io.realm.Sort;
 
-import static de.dorianscholz.openlibre.model.GlucoseData.convertGlucoseMGDLToDisplayUnit;
-
 @ReportsCrashes(
         formUri = "http://www-stud.informatik.uni-frankfurt.de/~scholz/openlibre/report.php",
         reportType = HttpSender.Type.FORM,
@@ -37,11 +37,11 @@ public class OpenLibre extends Application {
 
     private static final String LOG_ID = "OpenLibre::" + OpenLibre.class.getSimpleName();
 
-    // TODO: convert these to settings
-    public static final boolean GLUCOSE_UNIT_IS_MMOL = false;
-    public static final boolean FLAG_READ_MULTIPLE_BLOCKS = true;
-    public static final float GLUCOSE_TARGET_MIN = convertGlucoseMGDLToDisplayUnit(80);
-    public static final float GLUCOSE_TARGET_MAX = convertGlucoseMGDLToDisplayUnit(140);
+    // settings_
+    public static boolean NFC_USE_MULTI_BLOCK_READ = true;
+    public static boolean GLUCOSE_UNIT_IS_MMOL = false;
+    public static float GLUCOSE_TARGET_MIN = 80;
+    public static float GLUCOSE_TARGET_MAX = 140;
 
     public static RealmConfiguration realmConfigRawData;
     public static RealmConfiguration realmConfigProcessedData;
@@ -66,6 +66,8 @@ public class OpenLibre extends Application {
             return;
         }
 
+        refreshApplicationSettings(PreferenceManager.getDefaultSharedPreferences(getApplicationContext()));
+
         Realm.init(this);
 
         setupRealm(getApplicationContext());
@@ -73,6 +75,14 @@ public class OpenLibre extends Application {
         parseRawData();
 
         StethoUtils.install(this, openLibreDataPath);
+    }
+
+    public static void refreshApplicationSettings(SharedPreferences settings) {
+        // read settings values
+        NFC_USE_MULTI_BLOCK_READ = settings.getBoolean("pref_nfc_use_multi_block_read", NFC_USE_MULTI_BLOCK_READ);
+        GLUCOSE_UNIT_IS_MMOL = settings.getBoolean("pref_glucose_unit_is_mmol", GLUCOSE_UNIT_IS_MMOL);
+        GLUCOSE_TARGET_MIN = Float.parseFloat(settings.getString("pref_glucose_target_min", Float.toString(GLUCOSE_TARGET_MIN)));
+        GLUCOSE_TARGET_MAX = Float.parseFloat(settings.getString("pref_glucose_target_max", Float.toString(GLUCOSE_TARGET_MAX)));
     }
 
     public static void setupRealm(Context context) {
