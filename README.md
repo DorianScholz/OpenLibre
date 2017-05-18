@@ -1,7 +1,7 @@
 # OpenLibre
 The OpenLibre app for Android can be used to read the tissue glucose measurement data from the FreeStyle Libre CGM device using a NFC capable phone.
 
-Its allows users to see the current tissue glucose level as well an estimation of the current blood glucose level based on the tissue glucose levels from the past 15 minutes.
+Its allows users to see the current tissue glucose level as well as an estimation of the current blood glucose level based on the tissue glucose levels from the past 15 minutes.
 Historic data are visualized graphically in a plot.
 
 Further, the data can be uploaded by the user to their online account at Tidepool for more comprehensive data visualization in combination with data from other devices.
@@ -10,7 +10,7 @@ Further, the data can be uploaded by the user to their online account at Tidepoo
 By default the data read from the sensor is only stored locally on the phone.
 It can be exported to the phone's memory in JSON format.
 Only when explicitly specified by the user, the data will be uploaded to the servers of the open-source project Tidepool.
-Only after manual confirmation by the user will crash reports be send to the author of this app.
+And crash reports will on be sent to the author of this app after manual confirmation by the user.
 
 ## Building
 The app depends on the [TidepoolAPILib](https://github.com/DorianScholz/TidepoolAPILib).
