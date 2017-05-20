@@ -5,6 +5,7 @@ import android.preference.PreferenceManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
+import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,14 +36,14 @@ class LogRecyclerViewAdapter
     private final LogFragment fragment;
 
     LogRecyclerViewAdapter(LogFragment fragment, OrderedRealmCollection<ReadingData> data) {
-        super(fragment.getActivity(), data, true);
+        super(data, true);
         this.fragment = fragment;
-        PreferenceManager.getDefaultSharedPreferences(context).registerOnSharedPreferenceChangeListener(this);
+        PreferenceManager.getDefaultSharedPreferences(fragment.getContext()).registerOnSharedPreferenceChangeListener(this);
     }
 
     @Override
     public LogRowViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = inflater.inflate(R.layout.fragment_log_row, parent, false);
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_log_row, parent, false);
         return new LogRowViewHolder(itemView);
     }
 
@@ -106,7 +107,7 @@ class LogRecyclerViewAdapter
             view.setOnClickListener(this);
 
             // enable context menu only in developer mode
-            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+            SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(fragment.getContext());
             boolean developerMode = settings.getBoolean("pref_developer_mode", false);
             if (developerMode) {
                 view.setOnCreateContextMenuListener(this);

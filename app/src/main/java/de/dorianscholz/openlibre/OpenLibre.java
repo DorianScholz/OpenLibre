@@ -13,6 +13,7 @@ import org.acra.annotation.ReportsCrashes;
 import org.acra.sender.HttpSender;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import de.dorianscholz.openlibre.model.ProcessedDataModule;
 import de.dorianscholz.openlibre.model.RawDataModule;
@@ -86,18 +87,44 @@ public class OpenLibre extends Application {
     }
 
     public static void setupRealm(Context context) {
+        // get data path from settings
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+        String dataPathName = settings.getString("open_libre_data_path", null);
 
-        // find a storage path that we can actually create a realm in
-        if ((openLibreDataPath =
-                tryRealmStorage(new File(Environment.getExternalStorageDirectory().getPath(), "openlibre")))
-                    == null) {
-            if ((openLibreDataPath =
-                    tryRealmStorage(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS)))
-                        == null) {
-                openLibreDataPath = context.getFilesDir();
+        if (dataPathName != null) {
+            openLibreDataPath = new File(dataPathName);
+            Log.i(LOG_ID, "Using saved data path: '" + openLibreDataPath.toString() + "'");
+        } else {
+            final ArrayList<String> dataPathNames = new ArrayList<>();
+            dataPathNames.add(new File(Environment.getExternalStorageDirectory().getPath(), "openlibre").toString());
+            dataPathNames.add(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).toString());
+            dataPathNames.add(context.getFilesDir().toString());
+
+            // if data path is not saved in settings, search for existing realms
+            for (String pathName : dataPathNames) {
+                if (new File(pathName, "data_raw.realm").exists()) {
+                    openLibreDataPath = new File(pathName);
+                    Log.i(LOG_ID, "Using existing data path: '" + openLibreDataPath.toString() + "'");
+                    break;
+                }
             }
+
+            // if no existing realm was found, find a storage path that we can actually create a realm in
+            if (openLibreDataPath == null) {
+                for (String pathName : dataPathNames) {
+                    if (tryRealmStorage(new File(pathName))) {
+                        openLibreDataPath = new File(pathName);
+                        Log.i(LOG_ID, "Using new data path: '" + openLibreDataPath.toString() + "'");
+                        break;
+                    }
+                }
+            }
+
+            // save data path
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString("open_libre_data_path", openLibreDataPath.toString());
+            editor.apply();
         }
-        Log.i(LOG_ID, "Using data path: '" + openLibreDataPath.toString() + "'");
 
         realmConfigUserData = new RealmConfiguration.Builder()
                 .modules(new UserDataModule())
@@ -147,7 +174,7 @@ public class OpenLibre extends Application {
         realmRawData.close();
     }
 
-    private static File tryRealmStorage(File path) {
+    private static boolean tryRealmStorage(File path) {
         // check where we can actually store the databases on this device
         RealmConfiguration realmTestConfiguration;
 
@@ -163,10 +190,10 @@ public class OpenLibre extends Application {
             Realm.deleteRealm(realmTestConfiguration);
         } catch (Throwable e) {
             Log.i(LOG_ID, "Test creation of realm failed for: '" + path.toString() + "': " + e.toString());
-            return null;
+            return false;
         }
 
-        return path;
+        return true;
     }
 
 }
