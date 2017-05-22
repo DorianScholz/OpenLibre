@@ -27,6 +27,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
 import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
@@ -66,6 +67,7 @@ public class DataPlotFragment extends Fragment
             {Color.CYAN, Color.GREEN},
     };
     private static int mPlotColorIndex = 0;
+    private final static int maxZoomFactor = 12;
 
     private View mDataPlotView;
     LineChart mPlot;
@@ -73,6 +75,7 @@ public class DataPlotFragment extends Fragment
     private Timer mUpdatePlotTitleTimer;
     private TimerTask mUpdatePlotTitleTask = null;
     private DateTimeMarkerView mDateTimeMarkerView;
+    boolean isZoomedToTrend = false;
 
     @SuppressWarnings("unused")
     public static DataPlotFragment newInstance() {
@@ -92,6 +95,19 @@ public class DataPlotFragment extends Fragment
         clearScanData();
 
         PreferenceManager.getDefaultSharedPreferences(getContext()).registerOnSharedPreferenceChangeListener(this);
+
+        mDataPlotView.findViewById(R.id.iv_glucose_prediction).setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View view)
+            {
+                if (isZoomedToTrend)
+                    zoomOutMax();
+                else
+                    zoomToTrend();
+            }
+        });
+
 
         return mDataPlotView;
     }
@@ -404,28 +420,36 @@ public class DataPlotFragment extends Fragment
     private void updateChartViewConstrains() {
         mPlot.fitScreen();
 
-        final int maxZoomFactor = 16;
         final float minGlucoseShown = convertGlucoseMGDLToDisplayUnit(20);
         final float maxGlucoseShown = minGlucoseShown * maxZoomFactor;
 
         mPlot.setVisibleYRangeMinimum(minGlucoseShown, mPlot.getAxisLeft().getAxisDependency());
         mPlot.setVisibleYRangeMaximum(maxGlucoseShown, mPlot.getAxisLeft().getAxisDependency());
 
-        final float minMinutesShown = 30;
-        final float maxMinutesShown = minMinutesShown * maxZoomFactor;
+        final float maxMinutesShown = ReadingData.historyIntervalInMinutes * ReadingData.numHistoryValues + 2 * ReadingData.numTrendValues;
+        final float minMinutesShown = maxMinutesShown / maxZoomFactor;
 
         mPlot.setVisibleXRangeMinimum(minMinutesShown);
         mPlot.setVisibleXRangeMaximum(maxMinutesShown);
 
-        //ILineDataSet lineDataSet = mPlot.getData().getDataSetByIndex(mPlot.getData().getDataSetCount() - 1);
-        mPlot.moveViewTo(
-                mPlot.getData().getXMax(),
-                (mPlot.getData().getYMax() + mPlot.getData().getYMin()) / 2, // center on all data
-                //lineDataSet.getEntryForIndex(lineDataSet.getEntryCount() - 1).getY(), // center on last data
-                mPlot.getAxisLeft().getAxisDependency()
-        );
+        zoomOutMax();
 
         mPlot.invalidate();
+    }
+
+    private void zoomOutMax() {
+        mPlot.zoom(1 / maxZoomFactor, 1 / maxZoomFactor, mPlot.getData().getXMax(), (mPlot.getData().getYMax() + mPlot.getData().getYMin()) / 2, mPlot.getAxisLeft().getAxisDependency());
+        isZoomedToTrend = false;
+    }
+
+    private void zoomToTrend() {
+        ILineDataSet lineDataSet = mPlot.getData().getDataSetByIndex(mPlot.getData().getDataSetCount() - 1);
+        Entry lastEntry = lineDataSet.getEntryForIndex(lineDataSet.getEntryCount() - 1);
+        float yCenter = (lineDataSet.getYMin() + lineDataSet.getYMax()) / 2;
+
+        // zoom in max to the last data points
+        mPlot.zoom(maxZoomFactor, maxZoomFactor, lastEntry.getX(), yCenter, mPlot.getAxisLeft().getAxisDependency());
+        isZoomedToTrend = true;
     }
 
     private LineDataSet makeLineData(List<GlucoseData> glucoseDataList) {
