@@ -138,7 +138,8 @@ public class DataPlotFragment extends Fragment
         mPlot.setNoDataText("");
         mPlot.setOnChartGestureListener(this);
         mDateTimeMarkerView = new DateTimeMarkerView(getContext(), R.layout.date_time_marker);
-        mPlot.setMarkerView(mDateTimeMarkerView);
+        mPlot.setMarker(mDateTimeMarkerView);
+        mDateTimeMarkerView.setChartView(mPlot);
 
         // prevent scrolling in the plot to trigger switching of the view pager tabs
         mPlot.setOnTouchListener(new View.OnTouchListener() {
