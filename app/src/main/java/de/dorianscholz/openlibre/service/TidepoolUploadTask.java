@@ -4,23 +4,28 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.jayway.awaitility.core.ConditionTimeoutException;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import de.dorianscholz.openlibre.BuildConfig;
 import de.dorianscholz.openlibre.R;
 import de.dorianscholz.openlibre.model.GlucoseData;
 import io.realm.Realm;
 import io.realm.Sort;
 import io.tidepool.api.APIClient;
 import io.tidepool.api.data.DeviceDataCBG;
+import io.tidepool.api.data.DeviceDataCommon;
+import io.tidepool.api.data.UploadMetadata;
 import io.tidepool.api.data.User;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -71,9 +76,6 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
 
     private boolean uploadData() {
         try {
-
-            Log.d(TidepoolUploadTask.LOG_ID, "Before login");
-
             SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
             String tidepoolUsername = settings.getString("pref_tidepool_username", "");
             String tidepoolPassword = settings.getString("pref_tidepool_password", "");
@@ -101,8 +103,6 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
                 return false;
             }
 
-            Log.d(TidepoolUploadTask.LOG_ID, "Before upload");
-
             Realm realmProcessedData = Realm.getInstance(realmConfigProcessedData);
 
             SharedPreferences preferences = context.getSharedPreferences("tidepool", MODE_PRIVATE);
@@ -119,29 +119,65 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
 
             int countAllNewGlucoseData = newGlucoseData.size();
 
+            // create upload metadata
+            UploadMetadata uploadMetadata = new UploadMetadata();
+            uploadMetadata.setDeviceModel("FreeStyle Libre");
+            uploadMetadata.setTimeProcessing("none");
+            uploadMetadata.setByUser(""); // use currently logged in user
+            uploadMetadata.setVersion(BuildConfig.APPLICATION_ID + ":" + BuildConfig.VERSION_NAME);
+
+            List<String> manufacturers = new ArrayList<>();
+            manufacturers.add("Abbot");
+            uploadMetadata.setDeviceManufacturers(manufacturers);
+
+            List<String> tags = new ArrayList<>();
+            tags.add("cgm");
+            uploadMetadata.setDeviceTags(tags);
+
+            // iterate over glucose data entries and upload them
             while (newGlucoseData.size() > 0 && !isCancelled()) {
+                boolean includesUploadMetadata = false;
 
                 // create tidepool compatible data (100 per upload to keep POST request small)
-                ArrayList<DeviceDataCBG> deviceDataCBGs = new ArrayList<>();
+                ArrayList<DeviceDataCommon> deviceDataList = new ArrayList<>();
                 for (int i = 0; i < Math.min(newGlucoseData.size(), 100); i++) {
-                    DeviceDataCBG deviceDataCBG = new DeviceDataCBG();
                     GlucoseData glucoseData = newGlucoseData.get(i);
+                    String deviceSerialNumber = glucoseData.getSensor().getId().replace("sensor_", "");
 
-                    deviceDataCBG.setDeviceId(glucoseData.getSensor().getId());
-                    deviceDataCBG.setUploadId("");
+                    // if this data is from another sensor than the previous ones, update and add the upload metadata
+                    if (!deviceSerialNumber.equals(uploadMetadata.getDeviceSerialNumber())) {
+                        if (includesUploadMetadata) {
+                            // if this data list already contains an upload metadata entry, upload data now to not mix multiple uploadIds in one upload
+                            // next upload data list will then start with the new metadata
+                            break;
+                        }
+                        includesUploadMetadata = true;
 
+                        uploadMetadata.setDeviceSerialNumber(deviceSerialNumber);
+                        // make upload id look like "upid_1234567890abcdef" using the sensor id, so one upload id per sensor
+                        uploadMetadata.setUploadId("upid_" + deviceSerialNumber);
+                        // make device id look like "FreeStyleLibre_1234567890abcdef" using the sensor id
+                        uploadMetadata.setDeviceId("FreeStyleLibre_" + deviceSerialNumber);
+                        // make a deterministic id from the serial number, so future uploads will not create new metadata entries
+                        uploadMetadata.setId(Base64.encodeToString(MessageDigest.getInstance("SHA-256").digest(deviceSerialNumber.getBytes()), Base64.NO_WRAP));
+                        deviceDataList.add(uploadMetadata);
+                    }
+
+                    DeviceDataCBG deviceDataCBG = new DeviceDataCBG(uploadMetadata);
+
+                    // insert glucose value in mmol/L
                     deviceDataCBG.setUnits("mmol/L");
                     deviceDataCBG.setValue(glucoseData.glucose(true));
 
                     deviceDataCBG.setTime(new Date(glucoseData.getDate()));
                     deviceDataCBG.setTimezoneOffset(glucoseData.getTimezoneOffsetInMinutes());
 
-                    deviceDataCBGs.add(deviceDataCBG);
+                    deviceDataList.add(deviceDataCBG);
                 }
 
                 awaitDone = new AtomicBoolean(false);
                 awaitException = null;
-                tidepoolAPIClient.uploadDeviceData(deviceDataCBGs, new APIClient.UploadDeviceDataListener() {
+                tidepoolAPIClient.uploadDeviceData(deviceDataList, new APIClient.UploadDeviceDataListener() {
                     @Override
                     public void dataUploaded(List data, Exception exception) {
                         awaitException = exception;
@@ -160,11 +196,11 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
                 }
 
                 // update last sync date
-                tidepoolUploadTimestamp = deviceDataCBGs.get(deviceDataCBGs.size() - 1).getTime().getTime();
+                tidepoolUploadTimestamp = deviceDataList.get(deviceDataList.size() - 1).getTime().getTime();
 
                 SharedPreferences.Editor preferencesEditor = preferences.edit();
                 preferencesEditor.putLong(tidepoolUploadTimestampKey, tidepoolUploadTimestamp);
-                preferencesEditor.commit();
+                preferencesEditor.apply();
 
                 // find data that has not be uploaded yet
                 newGlucoseData = realmProcessedData.where(GlucoseData.class).
@@ -173,9 +209,8 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
                         findAllSorted(GlucoseData.DATE, Sort.ASCENDING);
 
                 float progress = (countAllNewGlucoseData - newGlucoseData.size()) / (float) countAllNewGlucoseData;
-                Log.i(TidepoolUploadTask.LOG_ID, "Uploaded until: " + new Date(tidepoolUploadTimestamp) + ", progress: " + progress);
+                Log.d(TidepoolUploadTask.LOG_ID, "Uploaded until: " + new Date(tidepoolUploadTimestamp) + ", progress: " + progress);
                 tidepoolSynchronization.updateProgress(progress, new Date(tidepoolUploadTimestamp));
-
             }
 
         } catch (Exception e) {
@@ -184,7 +219,6 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
             return false;
 
         }
-        Log.d(TidepoolUploadTask.LOG_ID, "After upload");
         return true;
     }
 
