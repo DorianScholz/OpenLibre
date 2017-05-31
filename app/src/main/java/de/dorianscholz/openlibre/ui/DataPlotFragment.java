@@ -221,11 +221,7 @@ public class DataPlotFragment extends Fragment
         updateTargetArea();
 
         try {
-            if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.HONEYCOMB) {
-                mPlot.setHardwareAccelerationEnabled(false);
-            } else {
-                mPlot.setHardwareAccelerationEnabled(true);
-            }
+            mPlot.setHardwareAccelerationEnabled(true);
         } catch (Exception e) {
             Log.d(LOG_ID, "Hardware acceleration for data plot failed: " + e.toString());
         }
@@ -269,13 +265,13 @@ public class DataPlotFragment extends Fragment
         ((TextView) mDataPlotView.findViewById(R.id.tv_plot_date)).setText("");
     }
 
-    void showHistory(List<GlucoseData> history, List<GlucoseData> trend) {
+    void showHistory(List<GlucoseData> history) {
         updateTargetArea();
         mPlot.clear();
         mDataPlotView.findViewById(R.id.scan_progress).setVisibility(View.INVISIBLE);
         mDataPlotView.findViewById(R.id.scan_view).setVisibility(View.VISIBLE);
 
-        updatePlot(history, trend);
+        updatePlot(history, null);
     }
 
     void showScan(ReadingData readData) {
@@ -299,11 +295,9 @@ public class DataPlotFragment extends Fragment
         GlucoseData currentGlucose = trend.get(trend.size() - 1);
         TextView tv_currentGlucose = (TextView) mDataPlotView.findViewById(R.id.tv_glucose_current_value);
         tv_currentGlucose.setText(
-                getResources().getString(R.string.glucose_current_value) +
-                ": " +
-                String.valueOf(currentGlucose.glucoseString()) +
-                " " +
-                getDisplayUnit()
+                String.format(getResources().getString(R.string.glucose_current_value),
+                currentGlucose.glucoseString(),
+                getDisplayUnit())
         );
 
         PredictionData predictedGlucose = new PredictionData(trend);

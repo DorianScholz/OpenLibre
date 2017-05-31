@@ -1,5 +1,6 @@
 apply plugin: "com.android.application"
 apply plugin: "kotlin-android"
+apply plugin: 'kotlin-android-extensions'
 apply plugin: "realm-android"
 
 android {
@@ -9,8 +10,8 @@ android {
         applicationId "de.dorianscholz.openlibre"
         minSdkVersion 16
         targetSdkVersion 25
-        versionCode 4
-        versionName "0.2.2"
+        versionCode 5
+        versionName "0.2.3"
         vectorDrawables.useSupportLibrary = true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         project.ext.set("archivesBaseName", defaultConfig.applicationId + "-" + defaultConfig.versionName);

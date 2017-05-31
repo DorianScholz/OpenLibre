@@ -28,6 +28,10 @@
         android:title="@string/action_show_fpu_calculator"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_export"
+        android:title="@string/export_data"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
         app:showAsAction="never" />

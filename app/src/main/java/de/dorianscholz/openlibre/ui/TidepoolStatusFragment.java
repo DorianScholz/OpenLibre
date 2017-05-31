@@ -1,6 +1,5 @@
 package de.dorianscholz.openlibre.ui;
 
-
 import android.app.Dialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -78,7 +76,9 @@ public class TidepoolStatusFragment extends DialogFragment implements TidepoolSy
         long tidepoolUploadTimestamp = preferences.getLong(tidepoolUploadTimestampKey, 0);
 
         if (tidepoolUploadTimestamp > 0) {
-            textViewSyncStatus.setText(getString(R.string.synchronized_until) + " " + dateTimeFormat.format(new Date(tidepoolUploadTimestamp)));
+            textViewSyncStatus.setText(
+                    String.format(getString(R.string.synchronized_until),
+                            dateTimeFormat.format(new Date(tidepoolUploadTimestamp))));
         } else {
             textViewSyncStatus.setText(getString(R.string.not_synchronized));
         }
@@ -144,7 +144,7 @@ public class TidepoolStatusFragment extends DialogFragment implements TidepoolSy
                     progressBarSync.setVisibility(View.INVISIBLE);
                 }
                 progressBarSync.setProgress((int) (100 * progress));
-                textViewSyncStatus.setText(getString(R.string.synchronized_until) + " " + dateTimeFormat.format(currentDate));
+                textViewSyncStatus.setText(String.format(getString(R.string.synchronized_until), dateTimeFormat.format(currentDate)));
             }
         });
     }

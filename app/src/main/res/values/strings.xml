@@ -73,7 +73,7 @@
     <string name="logging_in">Logging in…</string>
     <string name="synchronization">Synchronization</string>
     <string name="synchronize">Synchronize</string>
-    <string name="synchronized_until">Synchronized until</string>
+    <string name="synchronized_until" formatted="false">Synchronized until %s</string>
     <string name="not_synchronized">Not synchronized</string>
     <string name="tidepool_sync_success">Successfully synchronized with Tidepool.</string>
     <string name="tidepool_sync_error">Error synchronizing with Tidepool.</string>
@@ -82,7 +82,7 @@
     <string name="error_nfc_disabled">NFC is disabled, please enable in device settings.</string>
 
     <string name="blood_glucose_estimation">BG estimation</string>
-    <string name="glucose_current_value">Subcutaneous glucose level</string>
+    <string name="glucose_current_value" formatted="false">Subcutaneous glucose level: %s %s</string>
 
     <string name="about_description">OpenLibre allows to read the data of the Freestyle Libre CGM via NFC.</string>
     <string name="about_source">OpenLibre is free and open source and can be obtained from its website:</string>
@@ -109,4 +109,17 @@
     <string name="pref_glucose_unit_is_mmol_summary">If checked, show glucose values in mmol/L otherwise in mg/dL.</string>
     <string name="pref_nfc_use_multi_block_read">Use NFC Block Mode</string>
     <string name="pref_nfc_use_multi_block_read_summary">Read sensor quicker in NFC multi-block mode (disable if you have problems reading the sensor).</string>
+
+    <string name="export">Export</string>
+    <string name="export_data">Export Data</string>
+    <string name="exporting">Exporting…</string>
+    <string name="export_until" formatted="false">Exported until %s</string>
+    <string name="export_data_type">Data</string>
+    <string name="export_data_type_glucose">Glucose Measurements</string>
+    <string name="export_data_type_reading">Decoded Sensor Readings</string>
+    <string name="export_data_type_raw">Raw Sensor Readings</string>
+    <string name="export_output_format">Format</string>
+    <string name="export_output_format_json">JSON</string>
+    <string name="export_output_format_csv">CSV</string>
+
 </resources>

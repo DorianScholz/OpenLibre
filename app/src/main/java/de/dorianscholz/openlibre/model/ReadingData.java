@@ -220,6 +220,10 @@ public class ReadingData extends RealmObject {
         return true;
     }
 
+    public String getId() {
+        return id;
+    }
+
     public long getDate() {
         return date;
     }

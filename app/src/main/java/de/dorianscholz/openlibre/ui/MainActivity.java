@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
                     .clearScanData();
             ((DataPlotFragment) mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan))
-                    .showHistory(history, null);
+                    .showHistory(history);
             mViewPager.setCurrentItem(getResources().getInteger(R.integer.viewpager_page_show_scan));
             return true;
 
@@ -225,18 +225,19 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             return true;
 
         } else if (id == R.id.action_tidepool_status) {
-            DialogFragment tidepoolStatusFragment = new TidepoolStatusFragment();
-            tidepoolStatusFragment.show(getSupportFragmentManager(), "tidepoolstatus");
+            new TidepoolStatusFragment().show(getSupportFragmentManager(), "tidepoolstatus");
             return true;
 
         } else if (id == R.id.action_show_sensor_status) {
-            DialogFragment sensorStatusFragment = new SensorStatusFragment();
-            sensorStatusFragment.show(getSupportFragmentManager(), "sensorstatus");
+            new SensorStatusFragment().show(getSupportFragmentManager(), "sensorstatus");
+            return true;
+
+        } else if (id == R.id.action_export) {
+            new ExportFragment().show(getSupportFragmentManager(), "export");
             return true;
 
         } else if (id == R.id.action_about) {
-            DialogFragment aboutFragment = new AboutFragment();
-            aboutFragment.show(getSupportFragmentManager(), "about");
+            new AboutFragment().show(getSupportFragmentManager(), "about");
             return true;
 
         } else if (id == R.id.action_debug_make_crash) {
@@ -417,11 +418,11 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
 
     @Override
     protected void onNewIntent(Intent data) {
-        resolveIntent(data, true);
+        resolveIntent(data);
     }
 
 
-    private void resolveIntent(Intent data, boolean foregroundDispatch) {
+    private void resolveIntent(Intent data) {
         this.setIntent(data);
 
         if ((data.getFlags() & Intent.FLAG_ACTIVITY_LAUNCHED_FROM_HISTORY) != 0) {
@@ -435,7 +436,7 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
             if (mContinuousSensorReadingFlag) {
                 startContinuousSensorReadingTimer();
 
-            } else if (foregroundDispatch && (now - mLastScanTime) > 5000) {
+            } else if (now - mLastScanTime > 5000) {
                 DataPlotFragment dataPlotFragment = (DataPlotFragment)
                         mSectionsPagerAdapter.getRegisteredFragment(R.integer.viewpager_page_show_scan);
                 if (dataPlotFragment != null) {
@@ -455,7 +456,7 @@ public class MainActivity extends AppCompatActivity implements LogFragment.OnSca
         switch (requestCode) {
             case PENDING_INTENT_TECH_DISCOVERED:
                 // Resolve the foreground dispatch intent:
-                resolveIntent(data, true);
+                resolveIntent(data);
                 break;
         }
     }

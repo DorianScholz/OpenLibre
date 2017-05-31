@@ -107,4 +107,8 @@ public class RawTagData extends RealmObject {
     public String getTagId() {
         return tagId;
     }
+
+    public byte[] getData() {
+        return data;
+    }
 }

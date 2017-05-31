@@ -14,7 +14,7 @@
     <string name="error_nfc_disabled">NFC is ausgeschaltet, bitte in den Geräteeinstellungen einschalten.</string>
     <string name="fragment_title_log">Log</string>
     <string name="fragment_title_scan">Scan</string>
-    <string name="glucose_current_value">Gewebezuckerwert</string>
+    <string name="glucose_current_value" formatted="false">Gewebezuckerwert: %s %s</string>
     <string name="hour">Stunde</string>
     <string name="hours">Stunden</string>
     <string name="minute">Minute</string>
@@ -55,4 +55,5 @@
     <string name="title_blood_glucose">Blutzuckerwert</string>
     <string name="reading_sensor_not_ready">Sensor ist noch nicht bereit.</string>
     <string name="action_show_fpu_calculator">FPE Rechner</string>
+    <string name="export">Export</string>
 </resources>
