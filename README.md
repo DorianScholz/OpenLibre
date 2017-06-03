@@ -4,8 +4,9 @@ The OpenLibre app for Android can be used to read the tissue glucose measurement
 Its allows users to see the current tissue glucose level as well as an estimation of the current blood glucose level based on the tissue glucose levels from the past 15 minutes.
 Historic data is visualized graphically in a plot.
 
-Further, the data can be uploaded by the user to their online account at Tidepool for more comprehensive data visualization in combination with data from other devices.
-It can also be exported to the phone's memory in JSON and CSV formats.
+Further, the data can be uploaded by the user to their online account at [Tidepool](http://tidepool.org/) for more comprehensive data visualization in combination with data from other devices.
+
+All data can also be exported to the phone's memory in JSON and CSV formats.
 
 
 ## Privacy
