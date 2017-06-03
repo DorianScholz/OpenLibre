@@ -2,15 +2,26 @@
 The OpenLibre app for Android can be used to read the tissue glucose measurement data from the FreeStyle Libre CGM device using a NFC capable phone.
 
 Its allows users to see the current tissue glucose level as well as an estimation of the current blood glucose level based on the tissue glucose levels from the past 15 minutes.
-Historic data are visualized graphically in a plot.
+Historic data is visualized graphically in a plot.
 
 Further, the data can be uploaded by the user to their online account at Tidepool for more comprehensive data visualization in combination with data from other devices.
+It can also be exported to the phone's memory in JSON and CSV formats.
+
 
 ## Privacy
 By default the data read from the sensor is only stored locally on the phone.
-It can be exported to the phone's memory in JSON format.
 Only when explicitly specified by the user, the data will be uploaded to the servers of the open-source project Tidepool.
 And crash reports will on be sent to the author of this app after manual confirmation by the user.
+
+
+## Screenshots
+<img title="Before scanning the sensor" src="../gh-pages/screenshots/start.png?raw=true" width="200"></img>
+<img title="Showing the data after scanning the sensor" src="../gh-pages/screenshots/scan.png?raw=true" width="200"></img>
+<img title="Log of previous scan data" src="../gh-pages/screenshots/log.png?raw=true" width="200"></img>
+<img title="Status of the current scanned sensor" src="../gh-pages/screenshots/sensor.png?raw=true" width="200"></img>
+<img title="Data export dialog" src="../gh-pages/screenshots/export.png?raw=true" width="200"></img>
+<img title="Tidepool synchronization dialog" src="../gh-pages/screenshots/tidepool.png?raw=true" width="200"></img>
+
 
 ## Building
 The app depends on the [TidepoolAPILib](https://github.com/DorianScholz/TidepoolAPILib).
