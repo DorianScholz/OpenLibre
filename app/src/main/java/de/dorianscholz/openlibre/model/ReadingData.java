@@ -16,7 +16,6 @@ import io.realm.annotations.PrimaryKey;
 import static de.dorianscholz.openlibre.OpenLibre.realmConfigProcessedData;
 import static de.dorianscholz.openlibre.model.SensorData.maxSensorAgeInMinutes;
 import static de.dorianscholz.openlibre.model.SensorData.minSensorAgeInMinutes;
-import static java.lang.Math.abs;
 import static java.lang.Math.min;
 
 public class ReadingData extends RealmObject {
@@ -129,7 +128,7 @@ public class ReadingData extends RealmObject {
             int ageInSensorMinutes = ageInSensorMinutesList.get(i);
             long dataDate = lastReadingDate + (long) (TimeUnit.MINUTES.toMillis(ageInSensorMinutes - lastSensorAgeInMinutes) * timeDriftFactor);
 
-            GlucoseData glucoseData = makeGlucoseData(realmProcessedData, glucoseLevelRaw, ageInSensorMinutes, dataDate, false);
+            GlucoseData glucoseData = makeGlucoseData(realmProcessedData, glucoseLevelRaw, ageInSensorMinutes, dataDate);
             if(glucoseData == null) {
                 realmProcessedData.close();
                 return;
@@ -155,10 +154,10 @@ public class ReadingData extends RealmObject {
         realmProcessedData.close();
     }
 
-    private GlucoseData makeGlucoseData(Realm realmProcessedData, int glucoseLevelRaw, int ageInSensorMinutes, long dataDate, boolean isTrend) {
+    private GlucoseData makeGlucoseData(Realm realmProcessedData, int glucoseLevelRaw, int ageInSensorMinutes, long dataDate) {
         // if this data point has been read from this sensor before, reuse the object form the database, instead of changing the old data
         RealmResults<GlucoseData> previousGlucoseData = realmProcessedData.where(GlucoseData.class)
-                .equalTo(GlucoseData.ID, GlucoseData.generateId(sensor, ageInSensorMinutes, isTrend)).findAll();
+                .equalTo(GlucoseData.ID, GlucoseData.generateId(sensor, ageInSensorMinutes, false, glucoseLevelRaw)).findAll();
 
         // check if a valid previous data point was found
         if (!previousGlucoseData.isEmpty()) {
@@ -174,7 +173,7 @@ public class ReadingData extends RealmObject {
                 return null;
             }
         }
-        return new GlucoseData(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, isTrend, dataDate);
+        return new GlucoseData(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, false, dataDate);
     }
 
     private void shiftAgeToMatchPreviousReadings(Realm realmProcessedData, ArrayList<Integer> glucoseLevels, ArrayList<Integer> ageInSensorMinutesList) {
