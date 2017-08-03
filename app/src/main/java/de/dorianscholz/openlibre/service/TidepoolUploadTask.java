@@ -127,7 +127,7 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
             uploadMetadata.setVersion(BuildConfig.APPLICATION_ID + ":" + BuildConfig.VERSION_NAME);
 
             List<String> manufacturers = new ArrayList<>();
-            manufacturers.add("Abbot");
+            manufacturers.add("Abbott");
             uploadMetadata.setDeviceManufacturers(manufacturers);
 
             List<String> tags = new ArrayList<>();
