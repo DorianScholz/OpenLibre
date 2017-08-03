@@ -159,7 +159,7 @@ class TidepoolUploadTask extends AsyncTask<Void, Void, Boolean> {
                         // make device id look like "FreeStyleLibre_1234567890abcdef" using the sensor id
                         uploadMetadata.setDeviceId("FreeStyleLibre_" + deviceSerialNumber);
                         // make a deterministic id from the serial number, so future uploads will not create new metadata entries
-                        uploadMetadata.setId(Base64.encodeToString(MessageDigest.getInstance("SHA-256").digest(deviceSerialNumber.getBytes()), Base64.NO_WRAP));
+                        uploadMetadata.setId("FreeStyleLibre_" + deviceSerialNumber);
                         deviceDataList.add(uploadMetadata);
                     }
 
