@@ -81,9 +81,26 @@ public class ReadingData extends RealmObject {
         }
 
         int indexTrend = rawTagData.getIndexTrend();
-        int indexHistory = rawTagData.getIndexHistory();
 
         int mostRecentHistoryAgeInMinutes = 3 + (sensorAgeInMinutes - 3) % historyIntervalInMinutes;
+
+
+        // read trend values from ring buffer, starting at indexTrend (bytes 28-123)
+        for (int counter = 0; counter < numTrendValues; counter++) {
+            int index = (indexTrend + counter) % numTrendValues;
+
+            int glucoseLevelRaw = rawTagData.getTrendValue(index);
+            // skip zero values if the sensor has not filled the ring buffer yet completely
+            if (glucoseLevelRaw > 0) {
+                int dataAgeInMinutes = numTrendValues - counter;
+                int ageInSensorMinutes = sensorAgeInMinutes - dataAgeInMinutes;
+                long dataDate = lastReadingDate + (long) (TimeUnit.MINUTES.toMillis(ageInSensorMinutes - lastSensorAgeInMinutes) * timeDriftFactor);
+
+                trend.add(new GlucoseData(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, true, dataDate));
+            }
+        }
+
+        int indexHistory = rawTagData.getIndexHistory();
 
         ArrayList<Integer> glucoseLevels = new ArrayList<>();
         ArrayList<Integer> ageInSensorMinutesList = new ArrayList<>();
@@ -136,21 +153,6 @@ public class ReadingData extends RealmObject {
             history.add(glucoseData);
         }
 
-        // read trend values from ring buffer, starting at indexTrend (bytes 28-123)
-        for (int counter = 0; counter < numTrendValues; counter++) {
-            int index = (indexTrend + counter) % numTrendValues;
-
-            int glucoseLevelRaw = rawTagData.getTrendValue(index);
-            // skip zero values if the sensor has not filled the ring buffer yet completely
-            if (glucoseLevelRaw > 0) {
-                int dataAgeInMinutes = numTrendValues - counter;
-                int ageInSensorMinutes = sensorAgeInMinutes - dataAgeInMinutes;
-                long dataDate = lastReadingDate + (long) (TimeUnit.MINUTES.toMillis(ageInSensorMinutes - lastSensorAgeInMinutes) * timeDriftFactor);
-
-                trend.add(new GlucoseData(sensor, ageInSensorMinutes, timezoneOffsetInMinutes, glucoseLevelRaw, true, dataDate));
-            }
-        }
-
         realmProcessedData.close();
     }
 
@@ -201,8 +203,10 @@ public class ReadingData extends RealmObject {
             }
             // if a match between previous and new data points was found, shift the age of the new data points to fit the previous ones
             if (equal) {
-                for (int c = 0; c < ageInSensorMinutesList.size(); c++) {
-                    ageInSensorMinutesList.set(c, ageInSensorMinutesList.get(c) + shift * historyIntervalInMinutes);
+                if (shift != 0) {
+                    for (int c = 0; c < ageInSensorMinutesList.size(); c++) {
+                        ageInSensorMinutesList.set(c, ageInSensorMinutesList.get(c) + shift * historyIntervalInMinutes);
+                    }
                 }
             } else {
                 throw new RuntimeException("No match found between old and new data points.");
