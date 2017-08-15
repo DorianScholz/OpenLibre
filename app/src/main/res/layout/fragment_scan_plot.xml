@@ -6,7 +6,7 @@
 
     <TextView
         android:id="@+id/tv_plot_date"
-        android:text="plot date"
+        android:text=""
         android:textColor="@android:color/black"
         android:textSize="12sp"
         android:layout_width="match_parent"

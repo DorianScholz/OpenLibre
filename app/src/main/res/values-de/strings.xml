@@ -36,7 +36,7 @@
     <string name="scan_a_sensor">Sensor scannen</string>
     <string name="sensor_expired">Sensor ist abgelaufen.</string>
     <string name="sensor_not_activated_yet">Sensor ist noch nicht aktiviert.</string>
-    <string name="sensor_ready_in">Sensor bereit in</string>
+    <string name="sensor_ready_in">Sensor bereit in %d Minuten.</string>
     <string name="tv_scan_sensor_advice">Zum Auslesen des Sensors die Rückseite des Gerätes an den Sensor halten.</string>
     <string name="cancel">Abbrechen</string>
     <string name="no_sensor_registered">Kein registrieter Sensor ist momentan aktiv.</string>

@@ -328,7 +328,7 @@ public class DataPlotFragment extends Fragment
         Log.d(LOG_ID, String.format("#history: %d, #trend: %d", history.size(), trend == null ? 0 : trend.size()));
 
         if (history.size() == 0) {
-            Toast.makeText(this.getContext(), "No data available!", Toast.LENGTH_LONG).show();
+            Toast.makeText(this.getContext(), "No historical data available!", Toast.LENGTH_LONG).show();
             return;
         }
 

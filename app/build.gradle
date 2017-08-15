@@ -45,7 +45,6 @@ dependencies {
     compile "io.tidepool.api:tidepool-api-lib-debug@aar"
     compile "com.android.volley:volley:1.0.0"
     compile "com.jayway.awaitility:awaitility:1.7.0"
-    compile "com.google.android.gms:play-services-plus:10.2.6"
     compile "org.jetbrains.kotlin:kotlin-stdlib-jre7:$kotlin_version"
     compile "org.jetbrains.kotlinx:kotlinx-coroutines-android:0.15"
 }

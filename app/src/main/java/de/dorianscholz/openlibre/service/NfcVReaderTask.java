@@ -5,14 +5,17 @@ import android.media.AudioManager;
 import android.nfc.Tag;
 import android.nfc.tech.NfcV;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import de.dorianscholz.openlibre.OpenLibre;
 import de.dorianscholz.openlibre.R;
@@ -66,15 +69,30 @@ public class NfcVReaderTask extends AsyncTask<Tag, Void, Boolean> {
             vibrator.vibrate(vibrationPatternSuccess, -1);
         }
 
-        // FIXME: maybe this should be a dialog
         if (RawTagData.getSensorReadyInMinutes(data) > 0) {
             Toast.makeText(mainActivity,
                     mainActivity.getResources().getString(R.string.reading_sensor_not_ready) + " " +
-                    mainActivity.getResources().getString(R.string.sensor_ready_in) + " " +
-                    (RawTagData.getSensorReadyInMinutes(data)) + " " +
-                    mainActivity.getResources().getString(R.string.minutes),
+                            String.format(mainActivity.getResources().getString(R.string.sensor_ready_in), RawTagData.getSensorReadyInMinutes(data)) + " " +
+                            mainActivity.getResources().getString(R.string.minutes),
                     Toast.LENGTH_LONG
             ).show();
+
+            final TextView tv_sensor_ready_counter = (TextView) mainActivity.findViewById(R.id.tv_sensor_ready_counter);
+            tv_sensor_ready_counter.setVisibility(View.VISIBLE);
+
+            new CountDownTimer(TimeUnit.MINUTES.toMillis(RawTagData.getSensorReadyInMinutes(data)), TimeUnit.MINUTES.toMillis(1)) {
+                public void onTick(long millisUntilFinished) {
+                    int readyInMinutes = (int) Math.ceil(((double) millisUntilFinished) / TimeUnit.MINUTES.toMillis(1));
+                    tv_sensor_ready_counter.setText(String.format(
+                            mainActivity.getResources().getString(R.string.sensor_ready_in),
+                            readyInMinutes));
+                }
+
+                public void onFinish() {
+                    tv_sensor_ready_counter.setVisibility(View.INVISIBLE);
+                }
+            }.start();
+
             return;
         }
 

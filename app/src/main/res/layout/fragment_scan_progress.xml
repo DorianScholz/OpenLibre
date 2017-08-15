@@ -46,4 +46,13 @@
         android:layout_margin="5dp"
         android:padding="20dp" />
 
+    <TextView
+        android:id="@+id/tv_sensor_ready_counter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/sensor_ready_in"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="@color/colorAccent" />
+
 </LinearLayout>
