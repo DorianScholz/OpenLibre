@@ -1,3 +1,6 @@
+# *not maintained anymore*
+The currently most active fork is here: https://github.com/galekseev/OpenLibre
+
 # OpenLibre
 The OpenLibre app for Android can be used to read the tissue glucose measurement data from the FreeStyle Libre CGM device using a NFC capable phone.
 
